@@ -1,87 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Debug Icecast Info</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎧 Debug Lunaradio</title>
+  <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Raleway', sans-serif;
+      background-color: #111;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    #extassisnetwork {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h2>Debug Icecast Metadata</h2>
-  <input type="text" id="urlInput" placeholder="Ingresa URL base ej: https://cast6.my-control-panel.com/proxy/manrique/" size="80">
-  <button onclick="debugInfo()">Analizar</button>
-  <pre id="output"></pre>
+
+  <h1>🎧 Debug Lunaradio</h1>
+  <p id="status">Cargando stream...</p>
+  <div id="extassisnetwork"></div>
+
+  <!-- Librerías necesarias -->
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://extassisnetwork.com/player/Luna/luna.js"></script>
 
   <script>
-    async function fetchJSON(url) {
-      try {
-        const r = await fetch(url);
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return await r.json();
-      } catch (e) {
-        return { error: e.message };
-      }
+    function getStreamURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("stream") || "";
     }
 
-    async function fetchText(url) {
-      try {
-        const r = await fetch(url);
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return await r.text();
-      } catch (e) {
-        return { error: e.message };
-      }
-    }
+    const streamURL = getStreamURL();
 
-    function analyzeJSON(data) {
-      if (data.error) return null;
-      const srcs = Array.isArray(data.icestats?.source) ? data.icestats.source : [data.icestats?.source];
-      for (const src of srcs) {
-        if (src?.title || src?.yp_currently_playing) {
-          return {
-            type: "json",
-            title: src.title || src.yp_currently_playing,
-            listeners: src.listeners,
-            bitrate: src.bitrate,
-            server_name: src.server_name
-          };
-        }
-      }
-      return null;
-    }
+    if (streamURL) {
+      $("#status").text("🔍 Analizando: " + streamURL);
 
-    function analyzeHTML(html) {
-      if (!html || typeof html !== "string") return null;
-      const titleMatch = html.match(/<title>(.*?)<\/title>/i);
-      return titleMatch ? { type: "html", html_title: titleMatch[1] } : null;
-    }
-
-    async function debugInfo() {
-      const baseUrl = document.getElementById("urlInput").value.trim().replace(/\/+$/, "");
-      const jsonUrl = `${baseUrl}/status-json.xsl`;
-      const htmlUrl = `${baseUrl}/status.xsl`;
-      const out = document.getElementById("output");
-      out.textContent = "🔍 Consultando...";
-
-      const [jsonData, htmlData] = await Promise.all([fetchJSON(jsonUrl), fetchText(htmlUrl)]);
-
-      const jsonResult = analyzeJSON(jsonData);
-      const htmlResult = analyzeHTML(htmlData);
-
-      let report = "";
-
-      if (jsonResult) {
-        report += `✅ JSON válido:\nTítulo: ${jsonResult.title}\nOyentes: ${jsonResult.listeners}\nBitrate: ${jsonResult.bitrate}\nNombre del servidor: ${jsonResult.server_name}\n\n`;
-      } else {
-        report += `❌ JSON inválido o sin metadatos válidos.\n`;
-        if (jsonData?.error) report += `Error: ${jsonData.error}\n\n`;
-      }
-
-      if (htmlResult) {
-        report += `✅ HTML válido:\nHTML Title: ${htmlResult.html_title}\n`;
-      } else {
-        report += `❌ HTML inválido o sin título.\n`;
-      }
-
-      out.textContent = report;
+      $("#extassisnetwork").lunaradio({
+        streamurl: streamURL,
+        radioname: "Reproductor Debug",
+        coverimage: "https://stereorevelacionradio.com/wp-content/uploads/2022/12/logo-radio.png",
+        onlycoverimage: false,
+        userinterface: "big",
+        backgroundcolor: "#000000",
+        fontcolor: "#ffffff",
+        hightlightcolor: "#ff9900",
+        fontname: "Raleway",
+        googlefont: true,
+        fontratio: "0.4",
+        radialcolor1: "#ff9900",
+        radialcolor2: "#000000",
+        itunestoken: "1000lIPN"
+      });
+    } else {
+      $("#status").text("❌ No se ha proporcionado ningún stream en la URL.");
     }
   </script>
 </body>
