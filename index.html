@@ -15,12 +15,53 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .main-container {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Responsive layout */
+        @media (orientation: landscape) and (min-width: 768px) {
+            .radio-section {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            
+            .history-section {
+                flex: 1;
+                background: rgba(255, 255, 255, 0.05);
+                backdrop-filter: blur(10px);
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        @media (orientation: portrait), (max-width: 767px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .radio-section {
+                padding: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 50vh;
+            }
+            
+            .history-section {
+                background: rgba(255, 255, 255, 0.05);
+                backdrop-filter: blur(10px);
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                min-height: 50vh;
+            }
         }
 
         .radio-container {
@@ -29,7 +70,7 @@
             border-radius: 30px;
             padding: 40px;
             box-shadow: 
-                0 20px 60px rgba(0, 0, 0, 0.1),
+                0 20px 60px rgba(0, 0, 0, 0.3),
                 0 0 0 1px rgba(255, 255, 255, 0.8);
             max-width: 500px;
             width: 100%;
@@ -48,7 +89,7 @@
         .radio-logo {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, #4A90E2, #7B68EE);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -56,6 +97,7 @@
             color: white;
             font-weight: 800;
             font-size: 18px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
 
         .radio-title {
@@ -82,21 +124,34 @@
             position: relative;
             cursor: pointer;
             transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .album-cover:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
         }
 
-        .album-cover img {
+        .album-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 20px;
+        }
+
+        .default-logo {
+            font-size: 4rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s ease;
         }
 
-        .album-cover.playing img {
+        .album-cover.playing .default-logo,
+        .album-cover.playing .album-image {
             animation: rotate 10s linear infinite;
         }
 
@@ -111,7 +166,7 @@
             left: 10%;
             right: 10%;
             height: 50px;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), transparent);
+            background: linear-gradient(to bottom, rgba(102, 126, 234, 0.2), transparent);
             border-radius: 50%;
             filter: blur(10px);
             opacity: 0.6;
@@ -172,7 +227,7 @@
         .play-btn {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, #4A90E2, #7B68EE);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
         }
 
@@ -183,7 +238,7 @@
         }
 
         .secondary-btn:hover {
-            color: #4A90E2;
+            color: #667eea;
         }
 
         .volume-container {
@@ -208,7 +263,7 @@
             appearance: none;
             width: 20px;
             height: 20px;
-            background: linear-gradient(135deg, #4A90E2, #7B68EE);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             border-radius: 50%;
             cursor: pointer;
             transition: transform 0.2s ease;
@@ -233,7 +288,7 @@
         .stat-value {
             font-size: 1.5rem;
             font-weight: 700;
-            color: #4A90E2;
+            color: #667eea;
             margin-bottom: 5px;
         }
 
@@ -269,6 +324,72 @@
             font-weight: 600;
         }
 
+        /* History Section Styles */
+        .history-container {
+            padding: 30px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .history-header {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .history-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .history-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+        }
+
+        .history-list {
+            space-y: 15px;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .history-time {
+            color: #667eea;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .history-song {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .history-artist {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
         /* Loading states */
         .loading {
             opacity: 0.7;
@@ -276,6 +397,26 @@
 
         .error {
             color: #e74c3c;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
         }
 
         /* Mobile responsive */
@@ -296,89 +437,132 @@
             .volume-slider {
                 width: 150px;
             }
+
+            .history-container {
+                padding: 20px;
+            }
+
+            .history-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Scrollbar styling */
+        .history-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .history-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .history-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+        }
+
+        .history-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
         }
     </style>
 </head>
 <body>
-    <div class="radio-container">
-        <!-- Header -->
-        <div class="radio-header">
-            <div class="radio-logo">SR</div>
-            <h1 class="radio-title">Stereo Revelación Radio</h1>
-        </div>
+    <div class="main-container">
+        <!-- Radio Player Section -->
+        <div class="radio-section">
+            <div class="radio-container">
+                <!-- Header -->
+                <div class="radio-header">
+                    <div class="radio-logo">SR</div>
+                    <h1 class="radio-title">Stereo Revelación Radio</h1>
+                </div>
 
-        <!-- Live Indicator -->
-        <div class="live-indicator">
-            <span class="status-indicator" id="statusDot"></span>
-            <span id="statusText">EN VIVO</span>
-        </div>
+                <!-- Live Indicator -->
+                <div class="live-indicator">
+                    <span class="status-indicator" id="statusDot"></span>
+                    <span id="statusText">LISTO PARA REPRODUCIR</span>
+                </div>
 
-        <!-- Album Cover -->
-        <div class="album-container">
-            <div class="album-cover" id="albumCover">
-                <img src="https://stereorevelacionradio.com/wp-content/uploads/2023/05/logoSRR.png" 
-                     alt="Now Playing" 
-                     id="coverImage"
-                     crossorigin="anonymous">
+                <!-- Album Cover -->
+                <div class="album-container">
+                    <div class="album-cover" id="albumCover">
+                        <img src="https://stereorevelacionradio.com/wp-content/uploads/2022/12/cropped-logo-radio.png" alt="Stereo Revelación Radio" class="album-image" style="display: none;" id="albumImage">
+                        <div class="default-logo" id="defaultLogo">SR</div>
+                    </div>
+                    <div class="reflection"></div>
+                </div>
+
+                <!-- Now Playing Info -->
+                <div class="now-playing">
+                    <div class="now-playing-label">SONANDO AHORA</div>
+                    <h2 class="song-title" id="songTitle">Música Cristiana 24/7</h2>
+                    <p class="artist-name" id="artistName">Stereo Revelación Radio</p>
+                </div>
+
+                <!-- Controls -->
+                <div class="controls">
+                    <button class="control-btn secondary-btn" id="shareBtn" title="Compartir">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.50-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+                        </svg>
+                    </button>
+
+                    <button class="control-btn play-btn" id="playBtn" title="Reproducir">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" id="playIcon">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" id="pauseIcon" style="display: none;">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                        </svg>
+                    </button>
+
+                    <button class="control-btn secondary-btn" id="volumeBtn" title="Volumen">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Volume Control -->
+                <div class="volume-container">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#7f8c8d">
+                        <path d="M7 9v6h4l5 5V4l-5 5H7z"/>
+                    </svg>
+                    <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#7f8c8d">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                    </svg>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="listeners">Live</div>
+                        <div class="stat-label">Estado</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="peakListeners">24/7</div>
+                        <div class="stat-label">Horario</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">128k</div>
+                        <div class="stat-label">Calidad</div>
+                    </div>
+                </div>
             </div>
-            <div class="reflection"></div>
         </div>
 
-        <!-- Now Playing Info -->
-        <div class="now-playing">
-            <div class="now-playing-label">SONANDO AHORA</div>
-            <h2 class="song-title" id="songTitle">Cargando...</h2>
-            <p class="artist-name" id="artistName">Stereo Revelación Radio</p>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls">
-            <button class="control-btn secondary-btn" id="shareBtn" title="Compartir">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.50-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
-                </svg>
-            </button>
-
-            <button class="control-btn play-btn" id="playBtn" title="Reproducir">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" id="playIcon">
-                    <path d="M8 5v14l11-7z"/>
-                </svg>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" id="pauseIcon" style="display: none;">
-                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                </svg>
-            </button>
-
-            <button class="control-btn secondary-btn" id="volumeBtn" title="Volumen">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
-                </svg>
-            </button>
-        </div>
-
-        <!-- Volume Control -->
-        <div class="volume-container">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#7f8c8d">
-                <path d="M7 9v6h4l5 5V4l-5 5H7z"/>
-            </svg>
-            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#7f8c8d">
-                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-            </svg>
-        </div>
-
-        <!-- Stats -->
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-value" id="listeners">-</div>
-                <div class="stat-label">Oyentes</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="peakListeners">-</div>
-                <div class="stat-label">Máximo</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">128k</div>
-                <div class="stat-label">Calidad</div>
+        <!-- History Section -->
+        <div class="history-section">
+            <div class="history-container" id="historyContainer">
+                <div class="history-header">
+                    <h2 class="history-title">Historial Musical</h2>
+                    <p class="history-subtitle">Últimas canciones reproducidas</p>
+                </div>
+                <div class="history-list" id="historyList">
+                    <!-- History items will be loaded here -->
+                </div>
             </div>
         </div>
     </div>
@@ -392,19 +576,50 @@
                 this.audio = document.getElementById('radioStream');
                 this.isPlaying = false;
                 this.currentVolume = 70;
-                this.streamUrl = 'https://streaming.stereorevelacionradio.com:8000/stereo';
-                this.metadataUrl = 'https://streaming.stereorevelacionradio.com:8000/status-json.xsl';
+                
+                // Configuración de URLs del servidor de streaming
+                this.streamUrl = 'https://cast6.my-control-panel.com/proxy/manrique/';
+                this.fallbackStreamUrl = 'http://cast6.my-control-panel.com/proxy/manrique/';
+                this.statsUrl = 'https://cast6.asurahosting.com:7778/stats?json=1';
+                this.historyUrl = 'https://cast6.asurahosting.com:7778/played.html?sid=1';
+                this.logoUrl = 'https://stereorevelacionradio.com/wp-content/uploads/2022/12/cropped-logo-radio.png';
+                
                 this.updateInterval = null;
+                this.historyData = [];
+                this.retryCount = 0;
+                this.maxRetries = 3;
                 
                 this.initializePlayer();
                 this.bindEvents();
-                this.startMetadataUpdates();
+                this.loadHistory();
+                this.startHistoryUpdates();
+                this.loadStationLogo();
             }
 
             initializePlayer() {
                 this.audio.volume = this.currentVolume / 100;
-                this.audio.src = this.streamUrl;
                 document.getElementById('volumeSlider').value = this.currentVolume;
+                
+                // Configurar el audio para streaming
+                this.audio.crossOrigin = "anonymous";
+                this.audio.preload = "none";
+            }
+
+            loadStationLogo() {
+                const albumImage = document.getElementById('albumImage');
+                const defaultLogo = document.getElementById('defaultLogo');
+                
+                albumImage.onload = () => {
+                    albumImage.style.display = 'block';
+                    defaultLogo.style.display = 'none';
+                };
+                
+                albumImage.onerror = () => {
+                    albumImage.style.display = 'none';
+                    defaultLogo.style.display = 'block';
+                };
+                
+                albumImage.src = this.logoUrl;
             }
 
             bindEvents() {
@@ -422,8 +637,26 @@
                 // Audio events
                 this.audio.addEventListener('playing', () => this.onPlaying());
                 this.audio.addEventListener('pause', () => this.onPause());
-                this.audio.addEventListener('error', () => this.onError());
+                this.audio.addEventListener('error', (e) => this.onError(e));
                 this.audio.addEventListener('waiting', () => this.onBuffering());
+                this.audio.addEventListener('canplay', () => this.onCanPlay());
+                this.audio.addEventListener('loadstart', () => this.onLoadStart());
+                this.audio.addEventListener('ended', () => this.onEnded());
+                
+                // User interaction for autoplay policy
+                document.addEventListener('click', () => this.enableAutoplay(), { once: true });
+                document.addEventListener('touchstart', () => this.enableAutoplay(), { once: true });
+            }
+
+            enableAutoplay() {
+                // Prepare for autoplay by loading silent audio
+                this.audio.volume = 0;
+                this.audio.play().then(() => {
+                    this.audio.pause();
+                    this.audio.volume = this.currentVolume / 100;
+                }).catch(() => {
+                    // Autoplay still blocked
+                });
             }
 
             async togglePlay() {
@@ -434,14 +667,42 @@
                         await this.play();
                     }
                 } catch (error) {
-                    this.onError();
+                    console.error('Error al reproducir:', error);
+                    this.onError(error);
                 }
             }
 
             async play() {
                 this.updateStatus('Conectando...', 'loading');
-                this.audio.src = this.streamUrl + '?t=' + Date.now();
-                await this.audio.play();
+                this.retryCount = 0;
+                await this.tryPlay();
+            }
+
+            async tryPlay() {
+                try {
+                    // Detener cualquier reproducción anterior
+                    this.audio.pause();
+                    this.audio.currentTime = 0;
+                    
+                    // Usar HTTPS primero, luego HTTP como respaldo
+                    const streamUrl = this.retryCount === 0 ? this.streamUrl : this.fallbackStreamUrl;
+                    
+                    // Agregar timestamp para evitar caché
+                    this.audio.src = streamUrl + '?t=' + Date.now();
+                    this.audio.load();
+                    
+                    await this.audio.play();
+                    
+                } catch (error) {
+                    console.log(`Intento ${this.retryCount + 1} falló:`, error);
+                    
+                    if (this.retryCount < this.maxRetries) {
+                        this.retryCount++;
+                        setTimeout(() => this.tryPlay(), 1000 * this.retryCount);
+                    } else {
+                        throw error;
+                    }
+                }
             }
 
             pause() {
@@ -476,17 +737,27 @@
                         url: window.location.href
                     });
                 } else {
-                    navigator.clipboard.writeText(window.location.href);
-                    this.showMessage('¡Enlace copiado!');
+                    navigator.clipboard.writeText(window.location.href).then(() => {
+                        this.showMessage('¡Enlace copiado al portapapeles!');
+                    }).catch(() => {
+                        this.showMessage('No se pudo copiar el enlace');
+                    });
                 }
             }
 
             // Event handlers
+            onLoadStart() {
+                this.updateStatus('Cargando...', 'loading');
+            }
+
             onPlaying() {
                 this.isPlaying = true;
+                this.retryCount = 0;
                 this.updatePlayButton(false);
                 this.updateStatus('EN VIVO', 'playing');
                 document.getElementById('albumCover').classList.add('playing');
+                this.showMessage('¡Reproduciendo en vivo!');
+                this.startMetadataUpdates();
             }
 
             onPause() {
@@ -494,17 +765,56 @@
                 this.updatePlayButton(true);
                 this.updateStatus('Pausado', 'paused');
                 document.getElementById('albumCover').classList.remove('playing');
+                this.stopMetadataUpdates();
             }
 
             onBuffering() {
-                this.updateStatus('Buffering...', 'loading');
+                this.updateStatus('Cargando...', 'loading');
             }
 
-            onError() {
+            onCanPlay() {
+                if (this.isPlaying) {
+                    this.updateStatus('EN VIVO', 'playing');
+                }
+            }
+
+            onEnded() {
+                // El stream no debería terminar, pero si ocurre, reintentamos
+                if (this.isPlaying) {
+                    this.showMessage('Reconectando...', 'info');
+                    setTimeout(() => this.play(), 2000);
+                }
+            }
+
+            onError(error) {
+                console.error('Error de audio:', error);
                 this.isPlaying = false;
                 this.updatePlayButton(true);
                 this.updateStatus('Error de conexión', 'error');
                 document.getElementById('albumCover').classList.remove('playing');
+                
+                let errorMessage = 'Error de conexión. ';
+                
+                if (error.target && error.target.error) {
+                    switch (error.target.error.code) {
+                        case error.target.error.MEDIA_ERR_NETWORK:
+                            errorMessage += 'Problema de red.';
+                            break;
+                        case error.target.error.MEDIA_ERR_DECODE:
+                            errorMessage += 'Error de decodificación.';
+                            break;
+                        case error.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                            errorMessage += 'Formato no soportado.';
+                            break;
+                        default:
+                            errorMessage += 'Error desconocido.';
+                    }
+                } else {
+                    errorMessage += 'Verifica tu conexión a internet.';
+                }
+                
+                this.showMessage(errorMessage, 'error');
+                this.stopMetadataUpdates();
             }
 
             updatePlayButton(showPlay) {
@@ -526,75 +836,221 @@
                 
                 statusText.textContent = text;
                 
-                // Update dot color based on status
-                const colors = {
-                    playing: '#27ae60',
-                    loading: '#f39c12',
-                    error: '#e74c3c',
-                    stopped: '#95a5a6',
-                    paused: '#95a5a6'
-                };
-                
-                statusDot.style.background = colors[type] || colors.playing;
-            }
 
-            showMessage(message) {
-                const toast = document.createElement('div');
-                toast.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: #27ae60;
-                    color: white;
-                    padding: 15px 20px;
-                    border-radius: 10px;
-                    z-index: 1000;
-                    font-weight: 500;
-                `;
-                toast.textContent = message;
-                document.body.appendChild(toast);
-                
-                setTimeout(() => toast.remove(), 3000);
-            }
+const colors = {
+                playing: '#27ae60',
+                loading: '#f39c12',
+                error: '#e74c3c',
+                stopped: '#95a5a6',
+                paused: '#3498db'
+            };
+            
+            statusDot.style.background = colors[type] || colors.stopped;
+        }
 
-            // Metadata updates
-            startMetadataUpdates() {
-                this.updateMetadata();
-                this.updateInterval = setInterval(() => this.updateMetadata(), 10000);
-            }
+        startMetadataUpdates() {
+            this.stopMetadataUpdates();
+            this.updateInterval = setInterval(() => {
+                this.fetchCurrentSong();
+            }, 10000); // Actualizar cada 10 segundos
+            
+            // Actualizar inmediatamente
+            this.fetchCurrentSong();
+        }
 
-            async updateMetadata() {
-                try {
-                    const response = await fetch(this.metadataUrl, { cache: 'no-cache' });
-                    const data = await response.json();
-                    
-                    if (data?.icestats?.source) {
-                        const source = Array.isArray(data.icestats.source) 
-                            ? data.icestats.source[0] 
-                            : data.icestats.source;
-                        
-                        // Update song info
-                        if (source.title) {
-                            document.getElementById('songTitle').textContent = source.title;
-                            document.getElementById('artistName').textContent = source.artist || 'Stereo Revelación Radio';
-                        }
-                        
-                        // Update stats
-                        document.getElementById('listeners').textContent = source.listeners || '-';
-                        document.getElementById('peakListeners').textContent = source.listener_peak || '-';
-                    }
-                } catch (error) {
-                    // Use fallback data
-                    document.getElementById('songTitle').textContent = 'Música Cristiana 24/7';
-                    document.getElementById('artistName').textContent = 'Stereo Revelación Radio';
-                }
+        stopMetadataUpdates() {
+            if (this.updateInterval) {
+                clearInterval(this.updateInterval);
+                this.updateInterval = null;
             }
         }
 
-        // Initialize when DOM loads
-        document.addEventListener('DOMContentLoaded', () => {
-            new RadioPlayer();
-        });
+        async fetchCurrentSong() {
+            try {
+                const response = await fetch(this.statsUrl);
+                const data = await response.json();
+                
+                if (data && data.songtitle) {
+                    this.updateNowPlaying(data.songtitle);
+                }
+            } catch (error) {
+                console.log('No se pudo obtener información de la canción actual');
+            }
+        }
+
+        updateNowPlaying(songInfo) {
+            const parts = songInfo.split(' - ');
+            const songTitle = document.getElementById('songTitle');
+            const artistName = document.getElementById('artistName');
+            
+            if (parts.length >= 2) {
+                artistName.textContent = parts[0];
+                songTitle.textContent = parts[1];
+            } else {
+                songTitle.textContent = songInfo || 'Música Cristiana 24/7';
+                artistName.textContent = 'Stereo Revelación Radio';
+            }
+        }
+
+        async loadHistory() {
+            try {
+                const response = await fetch(this.historyUrl);
+                const text = await response.text();
+                this.parseHistoryData(text);
+            } catch (error) {
+                console.log('No se pudo cargar el historial musical');
+                this.showDefaultHistory();
+            }
+        }
+
+        parseHistoryData(htmlText) {
+            // Crear un elemento temporal para parsear el HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+            
+            // Buscar las filas de la tabla
+            const rows = doc.querySelectorAll('tr');
+            const history = [];
+            
+            rows.forEach((row, index) => {
+                if (index === 0) return; // Saltar encabezado
+                
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 2) {
+                    const time = cells[0].textContent.trim();
+                    const song = cells[1].textContent.trim();
+                    
+                    if (time && song) {
+                        history.push({
+                            time: this.formatTime(time),
+                            song: song
+                        });
+                    }
+                }
+            });
+            
+            this.historyData = history.slice(0, 20); // Mostrar últimas 20 canciones
+            this.renderHistory();
+        }
+
+        showDefaultHistory() {
+            this.historyData = [
+                {
+                    time: this.getCurrentTime(),
+                    song: 'Música Cristiana - Stereo Revelación Radio'
+                }
+            ];
+            this.renderHistory();
+        }
+
+        formatTime(timeString) {
+            // Convertir el tiempo del servidor al formato local
+            try {
+                const date = new Date(timeString);
+                return date.toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                return timeString;
+            }
+        }
+
+        getCurrentTime() {
+            return new Date().toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        renderHistory() {
+            const historyList = document.getElementById('historyList');
+            
+            if (this.historyData.length === 0) {
+                historyList.innerHTML = `
+                    <div class="history-item">
+                        <div class="history-time">${this.getCurrentTime()}</div>
+                        <div class="history-song">Música Cristiana 24/7</div>
+                        <div class="history-artist">Stereo Revelación Radio</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            historyList.innerHTML = this.historyData.map(item => {
+                const parts = item.song.split(' - ');
+                const artist = parts[0] || 'Stereo Revelación Radio';
+                const song = parts[1] || parts[0] || 'Música Cristiana';
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-time">${item.time}</div>
+                        <div class="history-song">${song}</div>
+                        <div class="history-artist">${artist}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        startHistoryUpdates() {
+            // Actualizar historial cada 30 segundos
+            setInterval(() => {
+                this.loadHistory();
+            }, 30000);
+        }
+
+        showMessage(message, type = 'info') {
+            // Remover toast existente
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // Crear nuevo toast
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // Mostrar toast
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Ocultar toast después de 3 segundos
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    }
+
+    // Inicializar el reproductor cuando se carga la página
+    document.addEventListener('DOMContentLoaded', () => {
+        window.radioPlayer = new RadioPlayer();
+    });
+
+    // Manejar visibilidad de la página para pausar/reanudar
+    document.addEventListener('visibilitychange', () => {
+        if (window.radioPlayer && window.radioPlayer.isPlaying) {
+            if (document.hidden) {
+                // La página está oculta, pero mantener reproduciendo
+                console.log('Página oculta, manteniendo reproducción');
+            } else {
+                // La página está visible de nuevo
+                console.log('Página visible de nuevo');
+            }
+        }
+    });
+
+    // Manejar errores globales de JavaScript
+    window.addEventListener('error', (event) => {
+        console.error('Error global:', event.error);
+    });
+
+    // Manejar promesas rechazadas
+    window.addEventListener('unhandledrejection', (event) => {
+        console.error('Promesa rechazada:', event.reason);
+    });
     </script>
 </body>
 </html>
