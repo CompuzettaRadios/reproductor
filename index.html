@@ -6,38 +6,55 @@
   <title>🎧 Recientemente Sonadas</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #111;
-      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f6f6f6;
+      margin: 0;
       padding: 20px;
       text-align: center;
     }
+
     h1 {
-      color: #ff9900;
+      color: #333;
+      margin-bottom: 20px;
     }
+
     #historial {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 20px;
-      margin-top: 20px;
+      max-width: 1200px;
+      margin: auto;
     }
+
     .cancion {
-      background-color: #222;
+      background: white;
       border-radius: 10px;
       padding: 10px;
-      width: 150px;
-      text-align: center;
-      box-shadow: 0 0 10px #000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
     }
+
+    .cancion:hover {
+      transform: scale(1.03);
+    }
+
     .cancion img {
       width: 100%;
       height: auto;
       border-radius: 8px;
+      object-fit: cover;
     }
-    .titulo {
-      margin-top: 8px;
+
+    .artista {
+      font-weight: bold;
+      margin-top: 10px;
       font-size: 14px;
+      color: #333;
+    }
+
+    .titulo {
+      font-size: 13px;
+      color: #666;
     }
   </style>
 </head>
@@ -55,19 +72,19 @@
         const response = await fetch(historialURL);
         const text = await response.text();
 
-        // Extraer títulos desde el HTML de played.html
         const parser = new DOMParser();
         const doc = parser.parseFromString(text, 'text/html');
         const rows = doc.querySelectorAll('tr');
 
         let canciones = [];
+
         rows.forEach((row, index) => {
-          if (index === 0) return; // Saltar encabezado
+          if (index === 0) return;
           const cells = row.querySelectorAll('td');
           if (cells.length >= 2) {
-            const titulo = cells[1].textContent.trim();
-            if (titulo && !canciones.includes(titulo)) {
-              canciones.push(titulo);
+            const tituloCompleto = cells[1].textContent.trim();
+            if (tituloCompleto && !canciones.includes(tituloCompleto)) {
+              canciones.push(tituloCompleto);
             }
           }
         });
@@ -76,13 +93,15 @@
 
         document.getElementById('historial').innerHTML = '';
 
-        canciones.slice(0, 10).forEach(async (titulo) => {
-          const imagen = await buscarCaratula(titulo);
+        canciones.slice(0, 12).forEach(async (nombreCompleto) => {
+          const [artista, cancion] = nombreCompleto.split(" - ").map(s => s.trim());
+          const imagen = await buscarCaratula(nombreCompleto);
           const div = document.createElement('div');
           div.className = 'cancion';
           div.innerHTML = `
             <img src="${imagen}" alt="Carátula">
-            <div class="titulo">${titulo}</div>
+            <div class="artista">${artista || "Artista Desconocido"}</div>
+            <div class="titulo">${cancion || "Canción Desconocida"}</div>
           `;
           document.getElementById('historial').appendChild(div);
         });
@@ -108,5 +127,6 @@
 
     obtenerHistorial();
   </script>
+
 </body>
 </html>
