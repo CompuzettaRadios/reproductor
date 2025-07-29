@@ -1,64 +1,88 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Obtener Metadatos</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        #result { margin-top: 20px; }
-        .error { color: red; }
-        .success { color: green; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Debug Icecast Info</title>
 </head>
 <body>
-    <h1>Obtener Metadatos de URL</h1>
-    <input type="text" id="url" placeholder="Introduce la URL" style="width: 300px;">
-    <button onclick="obtenerMetadatos()">Obtener Metadatos</button>
-    <div id="result"></div>
+  <h2>Debug Icecast Metadata</h2>
+  <input type="text" id="urlInput" placeholder="Ingresa URL base ej: https://cast6.my-control-panel.com/proxy/manrique/" size="80">
+  <button onclick="debugInfo()">Analizar</button>
+  <pre id="output"></pre>
 
-    <script>
-        async function obtenerMetadatos() {
-            const url = document.getElementById('url').value;
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = ''; // Limpiar resultados anteriores
+  <script>
+    async function fetchJSON(url) {
+      try {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return await r.json();
+      } catch (e) {
+        return { error: e.message };
+      }
+    }
 
-            const proxyUrl = 'https://tu-servidor-proxy.com/'; // Cambia esto a tu proxy si es necesario
+    async function fetchText(url) {
+      try {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return await r.text();
+      } catch (e) {
+        return { error: e.message };
+      }
+    }
 
-            try {
-                // Intenta acceder directamente primero
-                let response = await fetch(url);
-
-                // Si falla, intenta con el proxy
-                if (!response.ok) {
-                    console.log("Intentando con proxy...");
-                    response = await fetch(proxyUrl + url);
-                }
-
-                if (!response.ok) throw new Error('Error en la respuesta del servidor');
-
-                const text = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(text, 'text/html');
-                
-                // Obtener el título de la página
-                const title = doc.title || 'Sin título';
-                resultDiv.innerHTML += `<p class="success">HTML Title: ${title}</p>`;
-
-                // Buscar metadatos en formato JSON
-                const scripts = doc.querySelectorAll('script[type="application/json"]');
-                if (scripts.length > 0) {
-                    const jsonData = JSON.parse(scripts[0].innerText);
-                    resultDiv.innerHTML += `<p class="success">✅ Éxito Tipo: object</p>`;
-                    resultDiv.innerHTML += `<p>Longitud: ${JSON.stringify(jsonData).length} caracteres</p>`;
-                    resultDiv.innerHTML += `<pre>${JSON.stringify(jsonData, null, 4)}</pre>`;
-                } else {
-                    resultDiv.innerHTML += `<p class="error">❌ Error: No se encontraron metadatos en formato JSON.</p>`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
-            }
+    function analyzeJSON(data) {
+      if (data.error) return null;
+      const srcs = Array.isArray(data.icestats?.source) ? data.icestats.source : [data.icestats?.source];
+      for (const src of srcs) {
+        if (src?.title || src?.yp_currently_playing) {
+          return {
+            type: "json",
+            title: src.title || src.yp_currently_playing,
+            listeners: src.listeners,
+            bitrate: src.bitrate,
+            server_name: src.server_name
+          };
         }
-    </script>
+      }
+      return null;
+    }
+
+    function analyzeHTML(html) {
+      if (!html || typeof html !== "string") return null;
+      const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+      return titleMatch ? { type: "html", html_title: titleMatch[1] } : null;
+    }
+
+    async function debugInfo() {
+      const baseUrl = document.getElementById("urlInput").value.trim().replace(/\/+$/, "");
+      const jsonUrl = `${baseUrl}/status-json.xsl`;
+      const htmlUrl = `${baseUrl}/status.xsl`;
+      const out = document.getElementById("output");
+      out.textContent = "🔍 Consultando...";
+
+      const [jsonData, htmlData] = await Promise.all([fetchJSON(jsonUrl), fetchText(htmlUrl)]);
+
+      const jsonResult = analyzeJSON(jsonData);
+      const htmlResult = analyzeHTML(htmlData);
+
+      let report = "";
+
+      if (jsonResult) {
+        report += `✅ JSON válido:\nTítulo: ${jsonResult.title}\nOyentes: ${jsonResult.listeners}\nBitrate: ${jsonResult.bitrate}\nNombre del servidor: ${jsonResult.server_name}\n\n`;
+      } else {
+        report += `❌ JSON inválido o sin metadatos válidos.\n`;
+        if (jsonData?.error) report += `Error: ${jsonData.error}\n\n`;
+      }
+
+      if (htmlResult) {
+        report += `✅ HTML válido:\nHTML Title: ${htmlResult.html_title}\n`;
+      } else {
+        report += `❌ HTML inválido o sin título.\n`;
+      }
+
+      out.textContent = report;
+    }
+  </script>
 </body>
 </html>
