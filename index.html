@@ -12,57 +12,47 @@
       margin: 0;
       padding: 20px;
     }
-
     h1 {
       color: #ff9900;
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
-
     #history {
       display: flex;
       flex-direction: column;
       gap: 15px;
-      max-width: 800px;
-      margin: 0 auto;
+      max-width: 700px;
+      margin: auto;
     }
-
     .song {
+      display: flex;
       background: #222;
       border-radius: 10px;
       padding: 10px;
-      display: flex;
       align-items: center;
-      gap: 15px;
-      transition: background 0.2s;
+      box-shadow: 0 0 5px rgba(0,0,0,0.4);
     }
-
-    .song:hover {
-      background: #333;
-    }
-
     .song img {
       width: 80px;
       height: 80px;
       border-radius: 8px;
       object-fit: cover;
       flex-shrink: 0;
+      margin-right: 15px;
     }
-
-    .song-info {
+    .song-text {
       display: flex;
       flex-direction: column;
       justify-content: center;
+      text-align: left;
     }
-
-    .artist {
+    .song-text .artist {
       font-weight: bold;
-      font-size: 1rem;
+      font-size: 1.1rem;
       margin-bottom: 4px;
       color: #fff;
     }
-
-    .title {
+    .song-text .title {
       font-size: 0.95rem;
       color: #ccc;
     }
@@ -70,6 +60,10 @@
     @media (max-width: 600px) {
       .song {
         flex-direction: row;
+      }
+      .song img {
+        width: 64px;
+        height: 64px;
       }
     }
   </style>
@@ -83,8 +77,7 @@
     const fallbackCover = "https://stereorevelacionradio.com/wp-content/uploads/2022/12/cropped-logo-radio.png";
 
     async function fetchHistory() {
-      const proxyUrl = "https://api.allorigins.win/get?url=" +
-        encodeURIComponent("https://cast6.my-control-panel.com/proxy/manrique/played.html?sid=1");
+      const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://cast6.my-control-panel.com/proxy/manrique/played.html?sid=1");
 
       try {
         const res = await fetch(proxyUrl);
@@ -101,19 +94,18 @@
         for (let i = 0; i < matches.length && uniqueSongs.size < 10; i++) {
           const artist = matches[i][1].trim();
           const title = matches[i][2].trim();
-          const fullTitle = `${artist} ${title}`;
-          const songKey = artist.toLowerCase() + title.toLowerCase();
+          const songKey = artist.toLowerCase() + "|" + title.toLowerCase();
 
           if (uniqueSongs.has(songKey)) continue;
           uniqueSongs.add(songKey);
 
-          const coverUrl = await fetchCover(fullTitle);
+          const coverUrl = await fetchCover(`${artist} ${title}`);
 
           const div = document.createElement("div");
           div.className = "song";
           div.innerHTML = `
             <img src="${coverUrl}" alt="carátula" />
-            <div class="song-info">
+            <div class="song-text">
               <div class="artist">${artist}</div>
               <div class="title">${title}</div>
             </div>
@@ -140,7 +132,7 @@
     }
 
     fetchHistory();
-    setInterval(fetchHistory, 60000); // actualiza cada 60 segundos
+    setInterval(fetchHistory, 60000); // Actualiza cada 60 segundos
   </script>
 </body>
 </html>
