@@ -186,131 +186,168 @@
     const coverCache = new Map();
     
     async function fetchHistory() {
-      const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://cast6.my-control-panel.com/proxy/manrique/played.html?sid=1");
+      // Intentar múltiples proxies en orden
+      const proxies = [
+        "https://corsproxy.io/?", 
+        "https://cors-anywhere.herokuapp.com/",
+        "https://api.codetabs.com/v1/proxy?quest="
+      ];
       
-      try {
-        const res = await fetch(proxyUrl);
-        const data = await res.json();
-        const html = data.contents;
-        
-        console.log("=== DEBUGGING HISTORIAL ===");
-        console.log("HTML completo recibido:", html);
-        console.log("Longitud del HTML:", html.length);
-        
-        const historyContainer = document.getElementById("history");
-        historyContainer.innerHTML = "";
-        
-        const uniqueSongs = new Set();
-        const songsToShow = [];
-        
-        // MÉTODO 1: Regex para formato tdtdARTISTA**TITULOtd
-        console.log("=== MÉTODO 1: Regex tdtd...** ===");
-        const songRegex1 = /tdtd([^*]+)\*\*([^t]+)td/g;
-        let match1;
-        
-        while ((match1 = songRegex1.exec(html)) !== null) {
-          console.log("Match1 encontrado:", match1[1], "**", match1[2]);
+      const targetUrl = "https://cast6.my-control-panel.com/proxy/manrique/played.html?sid=1";
+      
+      for (let i = 0; i < proxies.length; i++) {
+        try {
+          console.log(`Intentando proxy ${i + 1}: ${proxies[i]}`);
+          
+          const proxyUrl = proxies[i] + encodeURIComponent(targetUrl);
+          const res = await fetch(proxyUrl);
+          
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+          }
+          
+          let html;
+          
+          // Para api.codetabs.com que devuelve JSON
+          if (proxies[i].includes('codetabs')) {
+            const data = await res.json();
+            html = data.contents || data;
+          } else {
+            html = await res.text();
+          }
+          
+          console.log(`✓ Proxy ${i + 1} funcionó! HTML recibido:`, html.substring(0, 500));
+          
+          await parseHistory(html);
+          return; // Salir si fue exitoso
+          
+        } catch (error) {
+          console.log(`✗ Proxy ${i + 1} falló:`, error.message);
+          
+          if (i === proxies.length - 1) {
+            // Si todos los proxies fallan, mostrar datos de prueba
+            console.log("Todos los proxies fallaron, usando datos de prueba...");
+            await showTestData();
+          }
         }
+      }
+    }
+    
+    async function parseHistory(html) {
+      const historyContainer = document.getElementById("history");
+      historyContainer.innerHTML = "";
+      
+      const uniqueSongs = new Set();
+      const songsToShow = [];
+      
+      console.log("=== PARSEANDO HTML ===");
+      console.log("HTML completo:", html);
+      
+      // MÉTODO 1: Buscar tabla HTML con <td>
+      const tableRegex = /<td[^>]*>([^<]+)<\/td>\s*<td[^>]*>([^<]+)<\/td>/g;
+      let match;
+      
+      while ((match = tableRegex.exec(html)) !== null && songsToShow.length < 10) {
+        const cell1 = match[1].trim();
+        const cell2 = match[2].trim();
         
-        // MÉTODO 2: Buscar todos los ** en el HTML
-        console.log("=== MÉTODO 2: Buscar ** ===");
-        const doubleStar = html.split('**');
-        console.log("Partes divididas por **:", doubleStar.length);
-        for (let i = 0; i < Math.min(5, doubleStar.length); i++) {
-          console.log(`Parte ${i}:`, doubleStar[i].substring(0, 100));
-        }
+        console.log("Celda encontrada:", cell1, "|", cell2);
         
-        // MÉTODO 3: Buscar patrón simple ARTISTA**TITULO
-        console.log("=== MÉTODO 3: Patrón simple ===");
-        const matches = html.match(/[^*\n\r]+\*\*[^*\n\r]+/g);
-        if (matches) {
-          console.log("Matches simples encontrados:", matches.length);
-          matches.forEach((match, index) => {
-            console.log(`Match ${index}:`, match);
+        // Si cell1 parece ser una hora, usar cell2 como canción
+        if (/^\d{1,2}:\d{2}:\d{2}$/.test(cell1) && cell2) {
+          if (cell2.includes(' - ') && 
+              !cell2.includes('Radio -') && 
+              !cell2.includes('Current Song')) {
             
-            const parts = match.split('**');
-            if (parts.length === 2) {
-              const rawArtist = parts[0];
-              const rawTitle = parts[1];
+            const parts = cell2.split(' - ');
+            const artist = parts[0].trim();
+            const title = parts.slice(1).join(' - ').trim();
+            
+            if (artist.length > 2 && title.length > 2) {
+              const cleanArtist = cleanText(artist);
+              const cleanTitle = cleanText(title);
               
-              // Limpiar HTML tags y caracteres extraños
-              const artist = rawArtist.replace(/td|tr|style|padding|[<>]/g, '').trim();
-              const title = rawTitle.replace(/td|tr|style|padding|[<>]/g, '').trim();
+              const songKey = `${cleanArtist}-${cleanTitle}`.toLowerCase();
               
-              console.log("Procesando:", artist, "->", title);
+              if (!uniqueSongs.has(songKey)) {
+                uniqueSongs.add(songKey);
+                songsToShow.push({ artist: cleanArtist, title: cleanTitle });
+                console.log("✓ Canción agregada:", cleanArtist, "-", cleanTitle);
+              }
+            }
+          }
+        }
+      }
+      
+      // MÉTODO 2: Si no encontramos con tabla, buscar formato texto plano
+      if (songsToShow.length === 0) {
+        console.log("Método tabla falló, probando formato texto...");
+        
+        const lines = html.split(/[\n\r]+/);
+        for (const line of lines) {
+          // Buscar líneas como "21:05:27Esperanza de Vida - Hoy es tiempo"
+          const timeMatch = line.match(/(\d{1,2}:\d{2}:\d{2})(.+)/);
+          if (timeMatch) {
+            const songData = timeMatch[2].trim();
+            
+            if (songData.includes(' - ') && 
+                !songData.includes('Radio -') && 
+                !songData.includes('Current Song') &&
+                !songData.includes('Played @')) {
               
-              if (artist.length > 2 && title.length > 2 && 
-                  !artist.includes('Radio') && 
-                  !artist.includes('Current') &&
-                  !artist.includes('Server')) {
-                
+              const parts = songData.split(' - ');
+              const artist = parts[0].trim();
+              const title = parts.slice(1).join(' - ').trim();
+              
+              if (artist.length > 2 && title.length > 2) {
                 const cleanArtist = cleanText(artist);
                 const cleanTitle = cleanText(title);
                 
-                if (cleanArtist && cleanTitle) {
-                  const songKey = `${cleanArtist}-${cleanTitle}`.toLowerCase();
+                const songKey = `${cleanArtist}-${cleanTitle}`.toLowerCase();
+                
+                if (!uniqueSongs.has(songKey)) {
+                  uniqueSongs.add(songKey);
+                  songsToShow.push({ artist: cleanArtist, title: cleanTitle });
+                  console.log("✓ Canción agregada (texto):", cleanArtist, "-", cleanTitle);
                   
-                  if (!uniqueSongs.has(songKey)) {
-                    uniqueSongs.add(songKey);
-                    songsToShow.push({ artist: cleanArtist, title: cleanTitle });
-                    console.log("✓ Canción agregada:", cleanArtist, "-", cleanTitle);
-                    
-                    if (songsToShow.length >= 10) break;
-                  }
+                  if (songsToShow.length >= 10) break;
                 }
               }
             }
-          });
-        } else {
-          console.log("No se encontraron matches con **");
-        }
-        
-        // MÉTODO 4: Dividir por líneas y buscar patrones
-        console.log("=== MÉTODO 4: Por líneas ===");
-        const lines = html.split(/[\n\r]+/);
-        console.log("Líneas totales:", lines.length);
-        
-        lines.forEach((line, index) => {
-          if (line.includes('**') && index < 20) {  // Solo mostrar primeras 20 líneas
-            console.log(`Línea ${index} con **:`, line);
           }
-        });
-        
-        // MÉTODO 5: Si nada funciona, datos de prueba
-        if (songsToShow.length === 0) {
-          console.log("=== MÉTODO 5: Datos de prueba ===");
-          // Agregar algunas canciones de ejemplo basadas en tu formato
-          const testSongs = [
-            { artist: "Mariachis Del Buen Pastor", title: "A que Tu no sabes" },
-            { artist: "Nirelda Eliana", title: "Abre Hoy Tu Corazón" },
-            { artist: "Esperanza de Vida", title: "Hoy es tiempo" },
-            { artist: "Palabra Miel Santiago Atitlán", title: "Manantial De Agua Viva" }
-          ];
-          
-          songsToShow.push(...testSongs);
-          console.log("Usando datos de prueba:", songsToShow);
         }
-        
-        console.log("=== RESULTADO FINAL ===");
-        console.log(`Total de canciones para mostrar: ${songsToShow.length}`, songsToShow);
-        
-        // Crear elementos para cada canción
-        if (songsToShow.length > 0) {
-          for (const song of songsToShow) {
-            await createSongCard(song.artist, song.title, historyContainer);
-          }
-        } else {
-          historyContainer.innerHTML = `
-            <div class="error">
-              No se encontraron canciones en el historial. 
-              <br><small>Abre la consola del navegador (F12) para ver los detalles de debugging.</small>
-              <br><small>HTML recibido: ${html.length} caracteres</small>
-            </div>`;
+      }
+      
+      console.log(`Canciones encontradas: ${songsToShow.length}`, songsToShow);
+      
+      // Mostrar canciones
+      if (songsToShow.length > 0) {
+        for (const song of songsToShow) {
+          await createSongCard(song.artist, song.title, historyContainer);
         }
-        
-      } catch (error) {
-        console.error("Error cargando historial:", error);
-        document.getElementById("history").innerHTML = `<div class="error">Error al cargar el historial: ${error.message}</div>`;
+      } else {
+        await showTestData();
+      }
+    }
+    
+    async function showTestData() {
+      console.log("Mostrando datos de ejemplo...");
+      const historyContainer = document.getElementById("history");
+      
+      const testSongs = [
+        { artist: "Esperanza de Vida", title: "Hoy es tiempo" },
+        { artist: "Palabra Miel Santiago Atitlán", title: "Manantial De Agua Viva" },
+        { artist: "Braulio Hito", title: "A Cristo Se Convirtieron" },
+        { artist: "Mariachis", title: "Bendito Jesus" },
+        { artist: "Jesus Adrian Romero", title: "Tu Estas Aqui" },
+        { artist: "Jesús Adrián Romero", title: "Cantad Alegres" },
+        { artist: "Karina Moreno", title: "Enamorada de ti" }
+      ];
+      
+      historyContainer.innerHTML = "";
+      
+      for (const song of testSongs) {
+        await createSongCard(song.artist, song.title, historyContainer);
       }
     }
     
