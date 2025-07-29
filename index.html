@@ -193,88 +193,98 @@
         const data = await res.json();
         const html = data.contents;
         
+        console.log("HTML recibido:", html.substring(0, 500)); // Debug
+        
         const historyContainer = document.getElementById("history");
         historyContainer.innerHTML = "";
         
-        // Parsear el formato específico: "HORA ARTISTA - TITULO"
-        const lines = html.split('\n');
         const uniqueSongs = new Set();
         const songsToShow = [];
         
-        for (const line of lines) {
-          // Buscar líneas que contienen hora (formato HH:MM:SS) seguido de texto
-          const timeMatch = line.match(/(\d{2}:\d{2}:\d{2})(.+)/);
-          if (timeMatch) {
-            const songData = timeMatch[2].trim();
-            
-            // Saltar líneas que no son canciones
-            if (songData.includes('Current Song') || 
-                songData.includes('Radio -') || 
-                songData.includes('Played @') ||
-                songData.length < 5) {
-              continue;
-            }
-            
-            // Dividir por " - " para separar artista y título
-            const parts = songData.split(' - ');
-            if (parts.length >= 2) {
-              const artist = parts[0].trim();
-              const title = parts.slice(1).join(' - ').trim(); // Por si hay más guiones en el título
-              
-              const cleanArtist = cleanText(artist);
-              const cleanTitle = cleanText(title);
-              
-              if (cleanArtist && cleanTitle) {
-                const songKey = `${cleanArtist}-${cleanTitle}`.toLowerCase();
-                
-                if (!uniqueSongs.has(songKey)) {
-                  uniqueSongs.add(songKey);
-                  songsToShow.push({ artist: cleanArtist, title: cleanTitle });
-                  
-                  if (songsToShow.length >= 10) break;
-                }
-              }
-            }
-          }
-        }
+        // Método 1: Buscar patrones como "21:05:27Esperanza de Vida - Hoy es tiempo"
+        const timeRegex = /(\d{1,2}:\d{2}:\d{2})([^0-9\n\r]+)/g;
+        let match;
         
-        // Si no encontramos canciones con el método anterior, intentar parsing de HTML
-        if (songsToShow.length === 0) {
-          console.log("Probando parsing HTML alternativo...");
-          const htmlMatches = [...html.matchAll(/(\d{2}:\d{2}:\d{2})([^<\n]+)/g)];
+        while ((match = timeRegex.exec(html)) !== null && songsToShow.length < 10) {
+          const songData = match[2].trim();
           
-          for (const match of htmlMatches) {
-            const songData = match[2].trim();
+          console.log("Línea encontrada:", songData); // Debug
+          
+          // Filtrar líneas que no son canciones
+          if (songData.includes('Current Song') || 
+              songData.includes('Radio -') || 
+              songData.includes('Played @') ||
+              songData.includes('Status') ||
+              songData.includes('History') ||
+              songData.includes('Listen') ||
+              songData.includes('Server') ||
+              songData.length < 3) {
+            continue;
+          }
+          
+          // Dividir por " - " para separar artista y título
+          const dashIndex = songData.indexOf(' - ');
+          if (dashIndex > 0) {
+            const artist = songData.substring(0, dashIndex).trim();
+            const title = songData.substring(dashIndex + 3).trim();
             
-            if (songData.includes('Radio -') || 
-                songData.includes('Current Song') ||
-                songData.length < 5) {
-              continue;
+            const cleanArtist = cleanText(artist);
+            const cleanTitle = cleanText(title);
+            
+            if (cleanArtist && cleanTitle && cleanArtist.length > 1 && cleanTitle.length > 1) {
+              const songKey = `${cleanArtist}-${cleanTitle}`.toLowerCase();
+              
+              if (!uniqueSongs.has(songKey)) {
+                uniqueSongs.add(songKey);
+                songsToShow.push({ artist: cleanArtist, title: cleanTitle });
+                console.log("Canción agregada:", cleanArtist, "-", cleanTitle); // Debug
+              }
             }
+          }
+        }
+        
+        // Método 2: Si no encontramos nada, intentar con tabla HTML
+        if (songsToShow.length === 0) {
+          console.log("Probando método alternativo con tabla HTML...");
+          const tableMatches = [...html.matchAll(/<td>([^<]+)<\/td>/g)];
+          
+          for (let i = 0; i < tableMatches.length - 1; i++) {
+            const firstCell = tableMatches[i][1].trim();
+            const secondCell = tableMatches[i + 1] ? tableMatches[i + 1][1].trim() : '';
             
-            const parts = songData.split(' - ');
-            if (parts.length >= 2) {
-              const artist = parts[0].trim();
-              const title = parts.slice(1).join(' - ').trim();
+            // Verificar si la primera celda parece hora
+            if (/^\d{1,2}:\d{2}:\d{2}$/.test(firstCell) && secondCell) {
+              console.log("Tabla - Hora:", firstCell, "Canción:", secondCell);
               
-              const cleanArtist = cleanText(artist);
-              const cleanTitle = cleanText(title);
-              
-              if (cleanArtist && cleanTitle) {
-                const songKey = `${cleanArtist}-${cleanTitle}`.toLowerCase();
+              if (!secondCell.includes('Radio -') && 
+                  !secondCell.includes('Current Song') &&
+                  secondCell.includes(' - ')) {
                 
-                if (!uniqueSongs.has(songKey)) {
-                  uniqueSongs.add(songKey);
-                  songsToShow.push({ artist: cleanArtist, title: cleanTitle });
+                const parts = secondCell.split(' - ');
+                if (parts.length >= 2) {
+                  const artist = parts[0].trim();
+                  const title = parts.slice(1).join(' - ').trim();
                   
-                  if (songsToShow.length >= 10) break;
+                  const cleanArtist = cleanText(artist);
+                  const cleanTitle = cleanText(title);
+                  
+                  if (cleanArtist && cleanTitle) {
+                    const songKey = `${cleanArtist}-${cleanTitle}`.toLowerCase();
+                    
+                    if (!uniqueSongs.has(songKey)) {
+                      uniqueSongs.add(songKey);
+                      songsToShow.push({ artist: cleanArtist, title: cleanTitle });
+                      
+                      if (songsToShow.length >= 10) break;
+                    }
+                  }
                 }
               }
             }
           }
         }
         
-        console.log(`Encontradas ${songsToShow.length} canciones:`, songsToShow);
+        console.log(`Total de canciones encontradas: ${songsToShow.length}`, songsToShow);
         
         // Crear elementos para cada canción
         if (songsToShow.length > 0) {
@@ -282,7 +292,7 @@
             await createSongCard(song.artist, song.title, historyContainer);
           }
         } else {
-          historyContainer.innerHTML = '<div class="error">No se encontraron canciones en el historial</div>';
+          historyContainer.innerHTML = '<div class="error">No se encontraron canciones en el historial. <br><small>Revisa la consola del navegador para más detalles.</small></div>';
         }
         
       } catch (error) {
