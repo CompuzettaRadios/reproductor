@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF‑8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recientemente Sonadas</title>
   <style>
     body {
-      background-color: #111;
+      background: #111;
       color: #fff;
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
@@ -17,120 +17,110 @@
       color: #ff9900;
       margin-bottom: 30px;
     }
-    #history {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      max-width: 800px;
-      margin: auto;
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
-    .song {
-      display: flex;
-      align-items: center;
-      background: #1c1c1c;
-      border-radius: 12px;
-      padding: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-      transition: background 0.3s;
-    }
-    .song:hover {
-      background: #222;
-    }
-    .song img {
-      width: 80px;
-      height: 80px;
+    .card {
+      background: #1e1e1e;
       border-radius: 8px;
-      object-fit: cover;
-      margin-right: 15px;
-      flex-shrink: 0;
-    }
-    .song-info {
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: scale(1.03);
+    }
+    .card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+    .info {
+      padding: 8px;
     }
     .artist {
       font-weight: bold;
-      font-size: 1rem;
-      color: #fff;
-      margin-bottom: 5px;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .title {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: #ccc;
-    }
-
-    @media (min-width: 600px) {
-      #history {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      }
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   </style>
 </head>
 <body>
   <h1>🎧 Recientemente Sonadas</h1>
-  <div id="history">Cargando historial...</div>
+  <div id="grid">Cargando historial…</div>
 
   <script>
     const fallbackCover = "https://stereorevelacionradio.com/wp-content/uploads/2022/12/cropped-logo-radio.png";
 
-    async function fetchHistory() {
-      const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://cast6.my-control-panel.com/proxy/manrique/played.html?sid=1");
-
+    async function loadHistory() {
       try {
-        const res = await fetch(proxyUrl);
-        const data = await res.json();
+        const resp = await fetch("https://api.allorigins.win/get?url=" +
+          encodeURIComponent("https://cast6.my-control-panel.com/proxy/manrique/played.html?sid=1"));
+        const data = await resp.json();
         const html = data.contents;
 
         const matches = [...html.matchAll(/<td>([^<]+)<\/td>\s*<td>([^<]+)<\/td>/g)];
-        const historyContainer = document.getElementById("history");
-        historyContainer.innerHTML = "";
+        const grid = document.getElementById("grid");
+        grid.innerHTML = "";
 
-        let uniqueSongs = new Set();
+        const seen = new Set();
+        let count = 0;
+        for (let m of matches) {
+          if (count >= 8) break;
+          const artist = m[1].trim();
+          const title = m[2].trim();
+          const key = artist + "|" + title;
+          if (seen.has(key)) continue;
+          seen.add(key);
 
-        for (let i = 0; i < matches.length && uniqueSongs.size < 10; i++) {
-          const artist = matches[i][1].trim();
-          const title = matches[i][2].trim();
-          const songKey = (artist + " - " + title).toLowerCase();
-
-          if (uniqueSongs.has(songKey)) continue;
-          uniqueSongs.add(songKey);
-
-          const coverUrl = await fetchCover(`${artist} ${title}`);
+          const cover = await fetchCover(`${artist} ${title}`);
 
           const div = document.createElement("div");
-          div.className = "song";
+          div.className = "card";
           div.innerHTML = `
-            <img src="${coverUrl}" alt="Carátula" />
-            <div class="song-info">
+            <img src="${cover}" alt="carátula">
+            <div class="info">
               <div class="artist">${artist}</div>
               <div class="title">${title}</div>
-            </div>
-          `;
-          historyContainer.appendChild(div);
+            </div>`;
+          grid.appendChild(div);
+          count++;
         }
-      } catch (error) {
-        document.getElementById("history").innerText = "Error al cargar historial.";
-        console.error("Error cargando historial:", error);
+      } catch (e) {
+        document.getElementById("grid").innerText = "Error cargando historial.";
+        console.error(e);
       }
     }
 
     async function fetchCover(query) {
       try {
-        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=1`);
-        const json = await res.json();
-        if (json.results && json.results.length > 0) {
-          return json.results[0].artworkUrl100.replace("100x100", "200x200");
+        const r = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=1`);
+        const j = await r.json();
+        if (j.results && j.results.length) {
+          return j.results[0].artworkUrl100.replace("100x100", "300x300");
         }
-      } catch (e) {
-        console.warn("Error obteniendo carátula:", e);
-      }
+      } catch {}
       return fallbackCover;
     }
 
-    fetchHistory();
-    setInterval(fetchHistory, 60000); // cada minuto
+    loadHistory();
+    setInterval(loadHistory, 60000);
   </script>
 </body>
 </html>
