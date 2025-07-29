@@ -8,113 +8,121 @@
     body {
       background: #111;
       color: #fff;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 20px;
     }
+
     h1 {
       color: #ff9900;
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
+      font-size: 1.8em;
     }
-    #history {
+
+    .history-container {
       display: flex;
       flex-direction: column;
       gap: 15px;
       max-width: 700px;
       margin: auto;
     }
+
     .song {
+      background: #1e1e1e;
       display: flex;
-      background: #222;
-      border-radius: 10px;
-      padding: 10px;
       align-items: center;
-      box-shadow: 0 0 5px rgba(0,0,0,0.4);
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255, 153, 0, 0.1);
+      transition: background 0.3s;
     }
+
+    .song:hover {
+      background: #2a2a2a;
+    }
+
     .song img {
-      width: 80px;
-      height: 80px;
+      width: 64px;
+      height: 64px;
       border-radius: 8px;
       object-fit: cover;
-      flex-shrink: 0;
       margin-right: 15px;
+      flex-shrink: 0;
     }
-    .song-text {
+
+    .info {
       display: flex;
       flex-direction: column;
       justify-content: center;
-      text-align: left;
     }
-    .song-text .artist {
+
+    .artist {
       font-weight: bold;
-      font-size: 1.1rem;
+      font-size: 1rem;
       margin-bottom: 4px;
-      color: #fff;
     }
-    .song-text .title {
+
+    .title {
       font-size: 0.95rem;
       color: #ccc;
     }
 
-    @media (max-width: 600px) {
+    @media screen and (max-width: 600px) {
       .song {
         flex-direction: row;
+        align-items: center;
       }
+
       .song img {
-        width: 64px;
-        height: 64px;
+        margin-bottom: 0;
       }
     }
   </style>
 </head>
 <body>
-
   <h1>🎧 Recientemente Sonadas</h1>
-  <div id="history">Cargando historial...</div>
+  <div class="history-container" id="history">Cargando historial...</div>
 
   <script>
     const fallbackCover = "https://stereorevelacionradio.com/wp-content/uploads/2022/12/cropped-logo-radio.png";
 
     async function fetchHistory() {
-      const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://cast6.my-control-panel.com/proxy/manrique/played.html?sid=1");
-
       try {
+        const proxyUrl = "https://api.allorigins.win/get?url=" +
+          encodeURIComponent("https://cast6.my-control-panel.com/proxy/manrique/played.html?sid=1");
+
         const res = await fetch(proxyUrl);
         const data = await res.json();
         const html = data.contents;
 
         const matches = [...html.matchAll(/<td>([^<]+)<\/td>\s*<td>([^<]+)<\/td>/g)];
 
-        const historyContainer = document.getElementById("history");
-        historyContainer.innerHTML = "";
+        const container = document.getElementById("history");
+        container.innerHTML = "";
 
-        let uniqueSongs = new Set();
+        for (let i = 0; i < Math.min(matches.length, 6); i++) {
+          const artistRaw = matches[i][1].trim();
+          const titleRaw = matches[i][2].trim();
 
-        for (let i = 0; i < matches.length && uniqueSongs.size < 10; i++) {
-          const artist = matches[i][1].trim();
-          const title = matches[i][2].trim();
-          const songKey = artist.toLowerCase() + "|" + title.toLowerCase();
+          if (!artistRaw || !titleRaw) continue;
 
-          if (uniqueSongs.has(songKey)) continue;
-          uniqueSongs.add(songKey);
-
-          const coverUrl = await fetchCover(`${artist} ${title}`);
+          const coverUrl = await fetchCover(`${artistRaw} ${titleRaw}`);
 
           const div = document.createElement("div");
           div.className = "song";
           div.innerHTML = `
             <img src="${coverUrl}" alt="carátula" />
-            <div class="song-text">
-              <div class="artist">${artist}</div>
-              <div class="title">${title}</div>
+            <div class="info">
+              <div class="artist">${artistRaw}</div>
+              <div class="title">${titleRaw}</div>
             </div>
           `;
-          historyContainer.appendChild(div);
+          container.appendChild(div);
         }
-      } catch (error) {
-        document.getElementById("history").innerText = "Error al cargar historial.";
-        console.error("Error cargando historial:", error);
+      } catch (err) {
+        document.getElementById("history").innerText = "No se pudo cargar el historial.";
+        console.error("Error cargando historial:", err);
       }
     }
 
@@ -126,13 +134,13 @@
           return json.results[0].artworkUrl100.replace("100x100", "200x200");
         }
       } catch (e) {
-        console.warn("Error obteniendo carátula:", e);
+        console.warn("Error al buscar carátula:", e);
       }
       return fallbackCover;
     }
 
     fetchHistory();
-    setInterval(fetchHistory, 60000); // Actualiza cada 60 segundos
+    setInterval(fetchHistory, 60000); // cada minuto
   </script>
 </body>
 </html>
