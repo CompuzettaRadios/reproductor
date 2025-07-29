@@ -86,6 +86,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      text-transform: uppercase;
     }
     
     .title {
@@ -192,58 +193,88 @@
         const data = await res.json();
         const html = data.contents;
         
-        // Extraer canciones del HTML (omitiendo la hora)
-        const matches = [...html.matchAll(/<td>([^<]+)<\/td>\s*<td>([^<]+)<\/td>\s*<td>([^<]+)<\/td>/g)];
-        
         const historyContainer = document.getElementById("history");
         historyContainer.innerHTML = "";
         
-        // Usar Set para evitar duplicados
+        // Parsear el formato específico: "HORA ARTISTA - TITULO"
+        const lines = html.split('\n');
         const uniqueSongs = new Set();
         const songsToShow = [];
         
-        for (const match of matches) {
-          // match[1] es la hora (la omitimos)
-          const artist = match[2] ? match[2].trim() : '';
-          const title = match[3] ? match[3].trim() : '';
-          
-          // Limpiar texto
-          const cleanArtist = cleanText(artist);
-          const cleanTitle = cleanText(title);
-          
-          const songKey = `${cleanArtist}-${cleanTitle}`.toLowerCase();
-          
-          if (!uniqueSongs.has(songKey) && cleanArtist && cleanTitle && 
-              cleanArtist !== 'Artist' && cleanTitle !== 'Title') {
-            uniqueSongs.add(songKey);
-            songsToShow.push({ artist: cleanArtist, title: cleanTitle });
+        for (const line of lines) {
+          // Buscar líneas que contienen hora (formato HH:MM:SS) seguido de texto
+          const timeMatch = line.match(/(\d{2}:\d{2}:\d{2})(.+)/);
+          if (timeMatch) {
+            const songData = timeMatch[2].trim();
             
-            if (songsToShow.length >= 10) break;
-          }
-        }
-        
-        // Si no encontramos con el formato anterior, intentar otro patrón
-        if (songsToShow.length === 0) {
-          const alternativeMatches = [...html.matchAll(/<td>([^<]+)<\/td>\s*<td>([^<]+)<\/td>/g)];
-          
-          for (const match of alternativeMatches) {
-            const artist = match[1] ? match[1].trim() : '';
-            const title = match[2] ? match[2].trim() : '';
+            // Saltar líneas que no son canciones
+            if (songData.includes('Current Song') || 
+                songData.includes('Radio -') || 
+                songData.includes('Played @') ||
+                songData.length < 5) {
+              continue;
+            }
             
-            const cleanArtist = cleanText(artist);
-            const cleanTitle = cleanText(title);
-            
-            const songKey = `${cleanArtist}-${cleanTitle}`.toLowerCase();
-            
-            if (!uniqueSongs.has(songKey) && cleanArtist && cleanTitle &&
-                !cleanArtist.includes(':') && cleanArtist !== 'Artist') {
-              uniqueSongs.add(songKey);
-              songsToShow.push({ artist: cleanArtist, title: cleanTitle });
+            // Dividir por " - " para separar artista y título
+            const parts = songData.split(' - ');
+            if (parts.length >= 2) {
+              const artist = parts[0].trim();
+              const title = parts.slice(1).join(' - ').trim(); // Por si hay más guiones en el título
               
-              if (songsToShow.length >= 10) break;
+              const cleanArtist = cleanText(artist);
+              const cleanTitle = cleanText(title);
+              
+              if (cleanArtist && cleanTitle) {
+                const songKey = `${cleanArtist}-${cleanTitle}`.toLowerCase();
+                
+                if (!uniqueSongs.has(songKey)) {
+                  uniqueSongs.add(songKey);
+                  songsToShow.push({ artist: cleanArtist, title: cleanTitle });
+                  
+                  if (songsToShow.length >= 10) break;
+                }
+              }
             }
           }
         }
+        
+        // Si no encontramos canciones con el método anterior, intentar parsing de HTML
+        if (songsToShow.length === 0) {
+          console.log("Probando parsing HTML alternativo...");
+          const htmlMatches = [...html.matchAll(/(\d{2}:\d{2}:\d{2})([^<\n]+)/g)];
+          
+          for (const match of htmlMatches) {
+            const songData = match[2].trim();
+            
+            if (songData.includes('Radio -') || 
+                songData.includes('Current Song') ||
+                songData.length < 5) {
+              continue;
+            }
+            
+            const parts = songData.split(' - ');
+            if (parts.length >= 2) {
+              const artist = parts[0].trim();
+              const title = parts.slice(1).join(' - ').trim();
+              
+              const cleanArtist = cleanText(artist);
+              const cleanTitle = cleanText(title);
+              
+              if (cleanArtist && cleanTitle) {
+                const songKey = `${cleanArtist}-${cleanTitle}`.toLowerCase();
+                
+                if (!uniqueSongs.has(songKey)) {
+                  uniqueSongs.add(songKey);
+                  songsToShow.push({ artist: cleanArtist, title: cleanTitle });
+                  
+                  if (songsToShow.length >= 10) break;
+                }
+              }
+            }
+          }
+        }
+        
+        console.log(`Encontradas ${songsToShow.length} canciones:`, songsToShow);
         
         // Crear elementos para cada canción
         if (songsToShow.length > 0) {
@@ -306,19 +337,24 @@
       }
       
       try {
-        // Primero intentar con artista y título
+        // Buscar en iTunes
         let query = `${artist} ${title}`;
-        let response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&limit=5`);
+        let response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&media=music&limit=5&country=US`);
         let data = await response.json();
         
         if (data.results && data.results.length > 0) {
-          const coverUrl = data.results[0].artworkUrl100.replace('100x100', '600x600');
-          coverCache.set(cacheKey, coverUrl);
-          return coverUrl;
+          // Buscar coincidencia exacta primero
+          for (const result of data.results) {
+            if (result.artistName && result.trackName) {
+              const coverUrl = result.artworkUrl100.replace('100x100', '600x600');
+              coverCache.set(cacheKey, coverUrl);
+              return coverUrl;
+            }
+          }
         }
         
-        // Si no encuentra, intentar solo con el artista
-        response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist)}&media=music&limit=5`);
+        // Si no hay resultados específicos, buscar solo por artista
+        response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist)}&media=music&limit=3&country=US`);
         data = await response.json();
         
         if (data.results && data.results.length > 0) {
@@ -327,12 +363,26 @@
           return coverUrl;
         }
         
-        // Intentar con Deezer API como alternativa
-        response = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(query)}&limit=1`);
+        // Buscar en Last.fm como alternativa
+        const lastfmKey = 'YOUR_LASTFM_KEY'; // Necesitarías una key
+        // Por ahora usamos solo iTunes y Deezer
+        
+        // Intentar con Deezer
+        response = await fetch(`https://api.deezer.com/search?q=artist:"${encodeURIComponent(artist)}" track:"${encodeURIComponent(title)}"&limit=1`);
         data = await response.json();
         
         if (data.data && data.data.length > 0) {
-          const coverUrl = data.data[0].album.cover_medium;
+          const coverUrl = data.data[0].album.cover_medium || data.data[0].album.cover_big;
+          coverCache.set(cacheKey, coverUrl);
+          return coverUrl;
+        }
+        
+        // Buscar solo por artista en Deezer
+        response = await fetch(`https://api.deezer.com/search?q=artist:"${encodeURIComponent(artist)}"&limit=1`);
+        data = await response.json();
+        
+        if (data.data && data.data.length > 0) {
+          const coverUrl = data.data[0].album.cover_medium || data.data[0].album.cover_big;
           coverCache.set(cacheKey, coverUrl);
           return coverUrl;
         }
