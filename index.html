@@ -555,46 +555,44 @@
 
         <!-- History Section -->
         <div class="history-section">
-            <div class="history-container" id="historyContainer">
-                <div class="history-header">
-                    <h2 class="history-title">Historial Musical</h2>
-                    <p class="history-subtitle">Últimas canciones reproducidas</p>
-                </div>
-                <div class="history-list" id="historyList">
-                    <!-- History items will be loaded here -->
-                </div>
-            </div>
+            <iframe src="historial.html" style="width: 100%; height: 100%; border: none; background: transparent;"></iframe>
         </div>
-    </div>
 
     <!-- Audio Element -->
     <audio id="radioStream" preload="none" crossorigin="anonymous"></audio>
 
     <script>
         class RadioPlayer {
-            constructor() {
-                this.audio = document.getElementById('radioStream');
-                this.isPlaying = false;
-                this.currentVolume = 70;
-                
-                // Configuración de URLs del servidor de streaming
-                this.streamUrl = 'https://cast6.my-control-panel.com/proxy/manrique/';
-                this.fallbackStreamUrl = 'http://cast6.my-control-panel.com/proxy/manrique/';
-                this.statsUrl = 'https://cast6.asurahosting.com:7778/stats?json=1';
-                this.historyUrl = 'https://cast6.asurahosting.com:7778/played.html?sid=1';
-                this.logoUrl = 'https://stereorevelacionradio.com/wp-content/uploads/2022/12/cropped-logo-radio.png';
-                
-                this.updateInterval = null;
-                this.historyData = [];
-                this.retryCount = 0;
-                this.maxRetries = 3;
-                
-                this.initializePlayer();
-                this.bindEvents();
-                this.loadHistory();
-                this.startHistoryUpdates();
-                this.loadStationLogo();
-            }
+
+constructor() {
+    this.audio = document.getElementById('radioStream');
+    this.isPlaying = false;
+    this.currentVolume = 70;
+    
+    // URLs corregidas sin proxy
+    this.streamUrls = [
+        'https://cast6.asurahosting.com:7778/stream',
+        'http://cast6.asurahosting.com:7778/stream',
+        'https://cast6.asurahosting.com:7778/',
+        'http://cast6.asurahosting.com:7778/'
+    ];
+    this.currentStreamIndex = 0;
+    this.statsUrl = 'https://cast6.asurahosting.com:7778/stats?json=1';
+    this.historyUrl = 'https://cast6.asurahosting.com:7778/played.html?sid=1';
+    this.logoUrl = 'https://stereorevelacionradio.com/wp-content/uploads/2022/12/cropped-logo-radio.png';
+    
+    this.updateInterval = null;
+    this.historyData = [];
+    this.retryCount = 0;
+    this.maxRetries = this.streamUrls.length;
+    this.playPromise = null;
+    
+    this.initializePlayer();
+    this.bindEvents();
+    this.loadHistory();
+    this.startHistoryUpdates();
+    this.loadStationLogo();
+}
 
             initializePlayer() {
                 this.audio.volume = this.currentVolume / 100;
@@ -679,40 +677,70 @@
             }
 
             async tryPlay() {
-                try {
-                    // Detener cualquier reproducción anterior
-                    this.audio.pause();
-                    this.audio.currentTime = 0;
-                    
-                    // Usar HTTPS primero, luego HTTP como respaldo
-                    const streamUrl = this.retryCount === 0 ? this.streamUrl : this.fallbackStreamUrl;
-                    
-                    // Agregar timestamp para evitar caché
-                    this.audio.src = streamUrl + '?t=' + Date.now();
-                    this.audio.load();
-                    
-                    await this.audio.play();
-                    
-                } catch (error) {
-                    console.log(`Intento ${this.retryCount + 1} falló:`, error);
-                    
-                    if (this.retryCount < this.maxRetries) {
-                        this.retryCount++;
-                        setTimeout(() => this.tryPlay(), 1000 * this.retryCount);
-                    } else {
-                        throw error;
-                    }
-                }
+    try {
+        // Cancelar cualquier reproducción anterior
+        if (this.playPromise) {
+            try {
+                await this.playPromise;
+            } catch (e) {
+                // Ignorar errores de promesas anteriores
             }
+        }
+        
+        this.audio.pause();
+        this.audio.currentTime = 0;
+        
+        // Usar diferentes URLs según el intento
+        const streamUrl = this.streamUrls[this.retryCount % this.streamUrls.length];
+        console.log(`Intentando con URL ${this.retryCount + 1}: ${streamUrl}`);
+        
+        // Configurar el stream
+        this.audio.src = streamUrl + (streamUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+        this.audio.load();
+        
+        // Esperar un momento antes de reproducir
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Intentar reproducir
+        this.playPromise = this.audio.play();
+        await this.playPromise;
+        this.playPromise = null;
+        
+    } catch (error) {
+        this.playPromise = null;
+        console.log(`Intento ${this.retryCount + 1} falló con ${this.streamUrls[this.retryCount % this.streamUrls.length]}:`, error.message);
+        
+        if (this.retryCount < this.maxRetries - 1) {
+            this.retryCount++;
+            // Esperar más tiempo entre intentos
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            await this.tryPlay();
+        } else {
+            // Todos los intentos fallaron
+            throw new Error('No se pudo conectar con ningún servidor de streaming');
+        }
+    }
+}
 
-            pause() {
-                this.audio.pause();
-                this.audio.src = '';
-                this.isPlaying = false;
-                this.updatePlayButton(true);
-                this.updateStatus('Detenido', 'stopped');
-                document.getElementById('albumCover').classList.remove('playing');
-            }
+// Reemplaza el método pause() para evitar conflictos
+pause() {
+    if (this.playPromise) {
+        this.playPromise.then(() => {
+            this.audio.pause();
+        }).catch(() => {
+            this.audio.pause();
+        });
+        this.playPromise = null;
+    } else {
+        this.audio.pause();
+    }
+    
+    this.audio.src = '';
+    this.isPlaying = false;
+    this.updatePlayButton(true);
+    this.updateStatus('Detenido', 'stopped');
+    document.getElementById('albumCover').classList.remove('playing');
+}
 
             setVolume(value) {
                 this.currentVolume = parseInt(value);
