@@ -3,130 +3,122 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎧 Recientemente Sonadas</title>
+  <title>Recientemente Sonadas</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f6f6f6;
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
-      text-align: center;
     }
-
     h1 {
-      color: #333;
+      color: #ff9900;
+      text-align: center;
       margin-bottom: 20px;
     }
-
-    #historial {
+    #history {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 20px;
-      max-width: 1200px;
-      margin: auto;
+      justify-content: center;
+      padding: 0 10px;
     }
-
-    .cancion {
-      background: white;
-      border-radius: 10px;
+    .song {
+      background: #222;
+      border-radius: 12px;
       padding: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
       transition: transform 0.2s;
     }
-
-    .cancion:hover {
-      transform: scale(1.03);
+    .song:hover {
+      transform: scale(1.05);
     }
-
-    .cancion img {
-      width: 100%;
-      height: auto;
+    .song img {
+      width: 100px;
+      height: 100px;
       border-radius: 8px;
       object-fit: cover;
+      margin-bottom: 10px;
     }
-
-    .artista {
+    .artist {
       font-weight: bold;
-      margin-top: 10px;
-      font-size: 14px;
-      color: #333;
+      margin-bottom: 5px;
+      font-size: 0.95rem;
     }
-
-    .titulo {
-      font-size: 13px;
-      color: #666;
+    .title {
+      font-size: 0.85rem;
+      color: #ccc;
     }
   </style>
 </head>
 <body>
 
   <h1>🎧 Recientemente Sonadas</h1>
-  <div id="historial">Cargando historial...</div>
+  <div id="history">Cargando historial...</div>
 
   <script>
-    const historialURL = 'https://cast6.my-control-panel.com/proxy/manrique/played.html?sid=1';
-    const logoDefault = 'https://stereorevelacionradio.com/wp-content/uploads/2022/12/cropped-logo-radio.png';
+    const fallbackCover = "https://stereorevelacionradio.com/wp-content/uploads/2022/12/cropped-logo-radio.png";
 
-    async function obtenerHistorial() {
+    async function fetchHistory() {
+      const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://cast6.my-control-panel.com/proxy/manrique/played.html?sid=1");
+
       try {
-        const response = await fetch(historialURL);
-        const text = await response.text();
+        const res = await fetch(proxyUrl);
+        const data = await res.json();
+        const html = data.contents;
 
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(text, 'text/html');
-        const rows = doc.querySelectorAll('tr');
+        const matches = [...html.matchAll(/<td>([^<]+)<\/td>\s*<td>([^<]+)<\/td>/g)];
 
-        let canciones = [];
+        const historyContainer = document.getElementById("history");
+        historyContainer.innerHTML = "";
 
-        rows.forEach((row, index) => {
-          if (index === 0) return;
-          const cells = row.querySelectorAll('td');
-          if (cells.length >= 2) {
-            const tituloCompleto = cells[1].textContent.trim();
-            if (tituloCompleto && !canciones.includes(tituloCompleto)) {
-              canciones.push(tituloCompleto);
-            }
-          }
-        });
+        let uniqueSongs = new Set();
 
-        if (canciones.length === 0) throw new Error("No se encontraron canciones");
+        for (let i = 0; i < matches.length && uniqueSongs.size < 10; i++) {
+          const artist = matches[i][1].trim();
+          const title = matches[i][2].trim();
+          const fullTitle = `${artist} ${title}`;
+          const songKey = artist.toLowerCase() + title.toLowerCase();
 
-        document.getElementById('historial').innerHTML = '';
+          if (uniqueSongs.has(songKey)) continue;
+          uniqueSongs.add(songKey);
 
-        canciones.slice(0, 12).forEach(async (nombreCompleto) => {
-          const [artista, cancion] = nombreCompleto.split(" - ").map(s => s.trim());
-          const imagen = await buscarCaratula(nombreCompleto);
-          const div = document.createElement('div');
-          div.className = 'cancion';
+          const coverUrl = await fetchCover(fullTitle);
+
+          const div = document.createElement("div");
+          div.className = "song";
           div.innerHTML = `
-            <img src="${imagen}" alt="Carátula">
-            <div class="artista">${artista || "Artista Desconocido"}</div>
-            <div class="titulo">${cancion || "Canción Desconocida"}</div>
+            <img src="${coverUrl}" alt="carátula" />
+            <div class="artist">${artist}</div>
+            <div class="title">${title}</div>
           `;
-          document.getElementById('historial').appendChild(div);
-        });
-
+          historyContainer.appendChild(div);
+        }
       } catch (error) {
-        document.getElementById('historial').textContent = '❌ Error al cargar el historial.';
-        console.error(error);
+        document.getElementById("history").innerText = "Error al cargar historial.";
+        console.error("Error cargando historial:", error);
       }
     }
 
-    async function buscarCaratula(titulo) {
+    async function fetchCover(query) {
       try {
-        const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(titulo)}&limit=1`);
-        const data = await response.json();
-        if (data.results && data.results.length > 0) {
-          return data.results[0].artworkUrl100.replace('100x100bb.jpg', '300x300bb.jpg');
+        const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=1`);
+        const json = await response.json();
+        if (json.results && json.results.length > 0) {
+          return json.results[0].artworkUrl100.replace("100x100", "200x200");
         }
       } catch (e) {
-        console.warn("iTunes no encontró carátula para:", titulo);
+        console.warn("Error obteniendo carátula:", e);
       }
-      return logoDefault;
+      return fallbackCover;
     }
 
-    obtenerHistorial();
+    fetchHistory();
+    setInterval(fetchHistory, 60000); // refresca cada 60 segundos
   </script>
-
 </body>
 </html>
