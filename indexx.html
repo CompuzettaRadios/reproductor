@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stereo Revelación Radio</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: grid;
+            gap: 20px;
+            padding: 20px;
+            grid-template-columns: 1fr;
+            align-items: center;
+            justify-items: center;
+        }
+
+        .radio-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 15px 30px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .radio-title {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
+        }
+
+        .radio-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            margin-top: 5px;
+            font-weight: 400;
+        }
+
+        .main-content {
+            display: grid;
+            gap: 30px;
+            width: 100%;
+            max-width: 1400px;
+            grid-template-columns: 1fr;
+        }
+
+        .player-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            display: grid;
+            gap: 30px;
+            grid-template-columns: 1fr;
+            align-items: center;
+        }
+
+        .album-cover {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            aspect-ratio: 1;
+            margin: 0 auto;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .album-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .album-cover.playing img {
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .player-info {
+            text-align: center;
+            color: white;
+        }
+
+        .station-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .now-playing {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .song-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .play-btn {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+        }
+
+        .secondary-btn {
+            width: 60px;
+            height: 60px;
+            font-size: 1.3rem;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+
+        .volume-slider {
+            width: 150px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-section {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .stats-title {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            color: #fff;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .recent-songs {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .recent-title {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            text-align: center;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .song-item {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .song-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(5px);
+        }
+
+        .song-name {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .song-time {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: none;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            font-style: italic;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+            display: none;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .container {
+                padding: 40px;
+            }
+
+            .player-section {
+                grid-template-columns: 350px 1fr;
+                gap: 50px;
+                padding: 50px;
+            }
+
+            .player-info {
+                text-align: left;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .main-content {
+                grid-template-columns: 2fr 1fr;
+                gap: 40px;
+            }
+
+            .radio-title {
+                font-size: 3rem;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .container {
+                padding: 60px;
+            }
+        }
+
+        .debug-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            max-width: 300px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .debug-toggle {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+        @media (max-width: 767px) {
+            .radio-title {
+                font-size: 2rem;
+            }
+
+            .player-section {
+                padding: 30px 20px;
+            }
+
+            .album-cover {
+                max-width: 280px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="radio-header">
+            <h1 class="radio-title">Stereo Revelación Radio</h1>
+            <p class="radio-subtitle">Música Cristiana 24/7</p>
+        </div>
+
+        <div class="main-content">
+            <div class="left-column">
+                <div class="player-section">
+                    <div class="album-cover" id="albumCover">
+                        <img src="https://stereorevelacionradio.com/wp-content/uploads/2022/12/cropped-logo-radio.png" alt="Stereo Revelación Radio" id="coverImage">
+                    </div>
+                    
+                    <div class="player-info">
+                        <div class="station-name">
+                            <span class="status-indicator" id="statusIndicator"></span>
+                            Stereo Revelación Radio
+                        </div>
+                        <div class="now-playing">Sonando Ahora</div>
+                        <div class="song-title" id="currentSong">Cargando...</div>
+                        
+                        <div class="player-controls">
+                            <button class="control-btn secondary-btn" id="volumeBtn" title="Silenciar">🔊</button>
+                            <button class="control-btn play-btn" id="playBtn" title="Reproducir">▶️</button>
+                            <button class="control-btn secondary-btn" id="shareBtn" title="Compartir">📤</button>
+                        </div>
+                        
+                        <div class="volume-control">
+                            <span style="color: rgba(255,255,255,0.8);">🔉</span>
+                            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+                            <span style="color: rgba(255,255,255,0.8);">🔊</span>
+                        </div>
+                        
+                        <div class="error-message" id="errorMessage"></div>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <h3 class="stats-title">Estadísticas del Stream</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="listeners">-</div>
+                            <div class="stat-label">Oyentes Actuales</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="peakListeners">-</div>
+                            <div class="stat-label">Máximo de Oyentes</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="bitrate">128 kbps</div>
+                            <div class="stat-label">Calidad de Audio</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="avgTime">-</div>
+                            <div class="stat-label">Tiempo Promedio</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="recent-songs">
+                    <h3 class="recent-title">Canciones Recientes</h3>
+                    <div class="loading" id="songsLoading">Cargando historial...</div>
+                    <div id="recentSongsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debug Info -->
+        <div class="debug-toggle" onclick="toggleDebug()">Debug Info</div>
+        <div class="debug-info" id="debugInfo">
+            <strong>Estado de Conexión:</strong><br>
+            <span id="debugStatus">Inicializando...</span><br><br>
+            <strong>Última Actualización:</strong><br>
+            <span id="debugLastUpdate">-</span><br><br>
+            <strong>Errores:</strong><br>
+            <span id="debugErrors">Ninguno</span>
+        </div>
+    </div>
+
+    <audio id="radioStream" preload="none" crossorigin="anonymous"></audio>
+
+    <script>
+        class StereoRevelacionPlayer {
+            constructor() {
+                this.streamUrl = 'https://cast6.asurahosting.com/proxy/manrique?mp=/stream';
+                this.statsUrl = 'http://cast6.asurahosting.com:7778/stats?json=1';
+                this.historyUrl = 'http://cast6.asurahosting.com:7778/played.html?sid=1';
+                this.logoUrl = 'https://stereorevelacionradio.com/wp-content/uploads/2022/12/cropped-logo-radio.png';
+                
+                this.audio = document.getElementById('radioStream');
+                this.isPlaying = false;
+                this.currentVolume = 0.7;
+                this.isMuted = false;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.loadStats();
+                this.loadHistory();
+                
+                // Actualizar datos cada 15 segundos para información más frecuente
+                setInterval(() => {
+                    this.loadStats();
+                }, 15000);
+                
+                // Actualizar historial cada 30 segundos
+                setInterval(() => {
+                    this.loadHistory();
+                }, 30000);
+            }
+
+            initializeElements() {
+                this.playBtn = document.getElementById('playBtn');
+                this.volumeBtn = document.getElementById('volumeBtn');
+                this.shareBtn = document.getElementById('shareBtn');
+                this.volumeSlider = document.getElementById('volumeSlider');
+                this.currentSong = document.getElementById('currentSong');
+                this.albumCover = document.getElementById('albumCover');
+                this.statusIndicator = document.getElementById('statusIndicator');
+                this.errorMessage = document.getElementById('errorMessage');
+                
+                // Elementos de estadísticas
+                this.listenersEl = document.getElementById('listeners');
+                this.peakListenersEl = document.getElementById('peakListeners');
+                this.bitrateEl = document.getElementById('bitrate');
+                this.avgTimeEl = document.getElementById('avgTime');
+                
+                // Lista de canciones recientes
+                this.recentSongsList = document.getElementById('recentSongsList');
+                this.songsLoading = document.getElementById('songsLoading');
+            }
+
+            setupEventListeners() {
+                this.playBtn.addEventListener('click', () => this.togglePlay());
+                this.volumeBtn.addEventListener('click', () => this.toggleMute());
+                this.shareBtn.addEventListener('click', () => this.shareStation());
+                this.volumeSlider.addEventListener('input', (e) => this.setVolume(e.target.value / 100));
+                
+                this.audio.addEventListener('loadstart', () => this.onLoadStart());
+                this.audio.addEventListener('canplay', () => this.onCanPlay());
+                this.audio.addEventListener('play', () => this.onPlay());
+                this.audio.addEventListener('pause', () => this.onPause());
+                this.audio.addEventListener('error', (e) => this.onError(e));
+                this.audio.addEventListener('waiting', () => this.onWaiting());
+                this.audio.addEventListener('playing', () => this.onPlaying());
+            }
+
+            async togglePlay() {
+                try {
+                    if (!this.isPlaying) {
+                        this.audio.src = this.streamUrl;
+                        this.audio.volume = this.currentVolume;
+                        await this.audio.play();
+                    } else {
+                        this.audio.pause();
+                        this.audio.src = '';
+                    }
+                } catch (error) {
+                    this.showError('Error al reproducir el stream: ' + error.message);
+                }
+            }
+
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                this.audio.volume = this.isMuted ? 0 : this.currentVolume;
+                this.volumeBtn.textContent = this.isMuted ? '🔇' : '🔊';
+                this.volumeSlider.value = this.isMuted ? 0 : this.currentVolume * 100;
+            }
+
+            setVolume(volume) {
+                this.currentVolume = volume;
+                if (!this.isMuted) {
+                    this.audio.volume = volume;
+                }
+                
+                if (volume === 0) {
+                    this.volumeBtn.textContent = '🔇';
+                    this.isMuted = true;
+                } else {
+                    this.volumeBtn.textContent = volume < 0.5 ? '🔉' : '🔊';
+                    this.isMuted = false;
+                }
+            }
+
+            shareStation() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Stereo Revelación Radio',
+                        text: 'Escucha música cristiana 24/7',
+                        url: window.location.href
+                    });
+                } else {
+                    navigator.clipboard.writeText(window.location.href).then(() => {
+                        alert('¡Enlace copiado al portapapeles!');
+                    });
+                }
+            }
+
+            onLoadStart() {
+                this.playBtn.textContent = '⏳';
+                this.statusIndicator.style.background = '#ffa500';
+                this.hideError();
+            }
+
+            onCanPlay() {
+                this.playBtn.textContent = '⏸️';
+            }
+
+            onPlay() {
+                this.isPlaying = true;
+                this.playBtn.textContent = '⏸️';
+                this.albumCover.classList.add('playing');
+                this.statusIndicator.style.background = '#4CAF50';
+            }
+
+            onPause() {
+                this.isPlaying = false;
+                this.playBtn.textContent = '▶️';
+                this.albumCover.classList.remove('playing');
+                this.statusIndicator.style.background = '#ff6b6b';
+            }
+
+            onError(e) {
+                this.isPlaying = false;
+                this.playBtn.textContent = '▶️';
+                this.albumCover.classList.remove('playing');
+                this.statusIndicator.style.background = '#ff6b6b';
+                
+                let errorMsg = 'Error de conexión con el stream';
+                if (e.target.error) {
+                    switch(e.target.error.code) {
+                        case e.target.error.MEDIA_ERR_NETWORK:
+                            errorMsg = 'Error de red al cargar el stream';
+                            break;
+                        case e.target.error.MEDIA_ERR_DECODE:
+                            errorMsg = 'Error al decodificar el audio';
+                            break;
+                        case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                            errorMsg = 'Formato de stream no soportado';
+                            break;
+                    }
+                }
+                this.showError(errorMsg);
+            }
+
+            onWaiting() {
+                this.playBtn.textContent = '⏳';
+                this.statusIndicator.style.background = '#ffa500';
+            }
+
+            onPlaying() {
+                this.playBtn.textContent = '⏸️';
+                this.statusIndicator.style.background = '#4CAF50';
+            }
+
+            showError(message) {
+                this.errorMessage.textContent = message;
+                this.errorMessage.style.display = 'block';
+                setTimeout(() => this.hideError(), 5000);
+            }
+
+            hideError() {
+                this.errorMessage.style.display = 'none';
+            }
+
+            async loadStats() {
+                updateDebugInfo('Cargando estadísticas...');
+                try {
+                    // Intentar cargar estadísticas reales del servidor Shoutcast
+                    const response = await fetch(this.statsUrl, {
+                        method: 'GET',
+                        mode: 'cors',
+                        headers: {
+                            'Accept': 'application/json',
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.updateStats(data);
+                        updateDebugInfo('Estadísticas cargadas correctamente');
+                    } else {
+                        throw new Error('Error al obtener estadísticas del servidor');
+                    }
+                } catch (error) {
+                    updateDebugInfo('Error CORS, intentando proxy...', error.message);
+                    console.warn('Error al cargar estadísticas reales, intentando método alternativo:', error);
+                    
+                    // Método alternativo usando proxy CORS o JSONP
+                    try {
+                        await this.loadStatsAlternative();
+                    } catch (altError) {
+                        console.warn('No se pudieron cargar las estadísticas:', altError);
+                        updateDebugInfo('Error: No se pueden obtener datos del servidor', altError.message);
+                        this.showError('No se pueden obtener datos en tiempo real del servidor');
+                    }
+                }
+            }
+
+            async loadStatsAlternative() {
+                // Intento con diferentes métodos para evitar CORS
+                const corsProxies = [
+                    'https://api.allorigins.win/raw?url=',
+                    'https://corsproxy.io/?',
+                    'https://cors-anywhere.herokuapp.com/'
+                ];
+
+                for (const proxy of corsProxies) {
+                    try {
+                        const response = await fetch(proxy + encodeURIComponent(this.statsUrl));
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.updateStats(data);
+                            return;
+                        }
+                    } catch (error) {
+                        console.log(`Proxy ${proxy} falló:`, error);
+                        continue;
+                    }
+                }
+
+                // Si todos los proxies fallan, intentar con fetch directo sin CORS
+                try {
+                    const response = await fetch(this.statsUrl, { mode: 'no-cors' });
+                    // Con no-cors no podemos leer la respuesta, pero podemos intentar parsearlo
+                    console.log('Petición enviada sin CORS, pero no se puede leer la respuesta');
+                } catch (error) {
+                    throw new Error('Todos los métodos de carga fallaron');
+                }
+            }
+
+            updateStats(data) {
+                // Manejar diferentes formatos de respuesta de Shoutcast
+                const listeners = data.currentlisteners || data.CURRENTLISTENERS || data.listeners || '-';
+                const peak = data.peaklisteners || data.PEAKLISTENERS || data.peak || '-';
+                const songTitle = data.songtitle || data.SONGTITLE || data.title || data.playing || 'Información no disponible';
+                const avgTime = data.avglistentime || data.AVGLISTENTIME || data.averageTime || '-';
+                const streamStatus = data.streamstatus || data.STREAMSTATUS || data.status || '1';
+
+                this.listenersEl.textContent = listeners;
+                this.peakListenersEl.textContent = peak;
+                this.avgTimeEl.textContent = avgTime;
+                
+                if (songTitle && songTitle !== 'Unknown' && songTitle !== 'Información no disponible') {
+                    this.currentSong.textContent = songTitle;
+                }
+                
+                // Actualizar indicador de estado
+                if (streamStatus === '1' || streamStatus === 'online' || streamStatus === true) {
+                    this.statusIndicator.style.background = '#4CAF50';
+                } else {
+                    this.statusIndicator.style.background = '#ff6b6b';
+                }
+
+                console.log('Estadísticas actualizadas:', { listeners, peak, songTitle, avgTime, streamStatus });
+            }
+
+            async loadHistory() {
+                try {
+                    this.songsLoading.style.display = 'block';
+                    
+                    // Intentar cargar historial real del servidor Shoutcast
+                    const response = await fetch(this.historyUrl, {
+                        method: 'GET',
+                        mode: 'cors'
+                    });
+                    
+                    if (response.ok) {
+                        const htmlText = await response.text();
+                        const songs = this.parseHistoryHTML(htmlText);
+                        this.displayHistory(songs);
+                    } else {
+                        throw new Error('Error al obtener historial del servidor');
+                    }
+                    
+                } catch (error) {
+                    console.warn('Error al cargar historial real, intentando método alternativo:', error);
+                    
+                    try {
+                        await this.loadHistoryAlternative();
+                    } catch (altError) {
+                        console.warn('No se pudo cargar el historial:', altError);
+                        this.showHistoryError();
+                    }
+                } finally {
+                    this.songsLoading.style.display = 'none';
+                }
+            }
+
+            async loadHistoryAlternative() {
+                const corsProxies = [
+                    'https://api.allorigins.win/get?url=',
+                    'https://corsproxy.io/?'
+                ];
+
+                for (const proxy of corsProxies) {
+                    try {
+                        const response = await fetch(proxy + encodeURIComponent(this.historyUrl));
+                        if (response.ok) {
+                            const data = await response.json();
+                            const htmlContent = data.contents || data;
+                            const songs = this.parseHistoryHTML(htmlContent);
+                            this.displayHistory(songs);
+                            return;
+                        }
+                    } catch (error) {
+                        console.log(`Proxy ${proxy} falló para historial:`, error);
+                        continue;
+                    }
+                }
+                
+                throw new Error('No se pudo cargar el historial con ningún método');
+            }
+
+            parseHistoryHTML(htmlText) {
+                try {
+                    // Crear un parser para el HTML del historial de Shoutcast
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
+                    
+                    const songs = [];
+                    
+                    // Buscar tablas o listas que contengan el historial
+                    const rows = doc.querySelectorAll('tr, li, .song, .track');
+                    
+                    rows.forEach((row, index) => {
+                        if (index > 10) return; // Limitar a 10 canciones recientes
+                        
+                        const text = row.textContent.trim();
+                        if (text && text.length > 5) {
+                            // Intentar extraer información de tiempo y título
+                            const timeMatch = text.match(/(\d{1,2}:\d{2}:\d{2}|\d{1,2}:\d{2})/);
+                            const title = text.replace(/\d{1,2}:\d{2}:\d{2}|\d{1,2}:\d{2}/, '').trim();
+                            
+                            if (title) {
+                                songs.push({
+                                    title: title,
+                                    time: timeMatch ? this.formatPlayTime(timeMatch[1]) : `Hace ${index * 3 + 2} minutos`
+                                });
+                            }
+                        }
+                    });
+                    
+                    // Si no encontramos canciones en la estructura esperada, buscar en el texto completo
+                    if (songs.length === 0) {
+                        const lines = htmlText.split('\n');
+                        lines.forEach((line, index) => {
+                            if (index > 10) return;
+                            const cleanLine = line.replace(/<[^>]*>/g, '').trim();
+                            if (cleanLine && cleanLine.length > 10 && !cleanLine.includes('Shoutcast') && !cleanLine.includes('Status')) {
+                                songs.push({
+                                    title: cleanLine,
+                                    time: `Hace ${index * 4 + 1} minutos`
+                                });
+                            }
+                        });
+                    }
+                    
+                    return songs.slice(0, 6); // Limitar a 6 canciones
+                    
+                } catch (error) {
+                    console.error('Error al parsear HTML del historial:', error);
+                    return [];
+                }
+            }
+
+            formatPlayTime(timeStr) {
+                const now = new Date();
+                const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+                
+                if (seconds !== undefined) {
+                    // Formato HH:MM:SS
+                    const playTime = new Date();
+                    playTime.setHours(hours, minutes, seconds);
+                    
+                    const diffMs = now - playTime;
+                    const diffMins = Math.floor(diffMs / (1000 * 60));
+                    
+                    if (diffMins < 1) return 'Hace unos segundos';
+                    if (diffMins < 60) return `Hace ${diffMins} minutos`;
+                    
+                    const diffHours = Math.floor(diffMins / 60);
+                    return `Hace ${diffHours} horas`;
+                } else {
+                    // Formato MM:SS - asumir que es duración
+                    return `Hace ${hours} minutos`;
+                }
+            }
+
+            showHistoryError() {
+                this.recentSongsList.innerHTML = `
+                    <div class="song-item" style="text-align: center; color: rgba(255,255,255,0.7);">
+                        <div class="song-name">No se pudo cargar el historial</div>
+                        <div class="song-time">Verifica la conexión con el servidor</div>
+                    </div>
+                `;
+            }
+
+            displayHistory(songs) {
+                this.recentSongsList.innerHTML = '';
+                
+                songs.forEach((song, index) => {
+                    const songItem = document.createElement('div');
+                    songItem.className = 'song-item';
+                    
+                    songItem.innerHTML = `
+                        <div class="song-name">${song.title}</div>
+                        <div class="song-time">${song.time}</div>
+                    `;
+                    
+                    this.recentSongsList.appendChild(songItem);
+                });
+            }
+        }
+
+        // Función para toggle del debug info
+        function toggleDebug() {
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Función para actualizar debug info
+        function updateDebugInfo(status, errors = null) {
+            document.getElementById('debugStatus').textContent = status;
+            document.getElementById('debugLastUpdate').textContent = new Date().toLocaleTimeString();
+            if (errors) {
+                document.getElementById('debugErrors').textContent = errors;
+            }
+        }
+
+        // Inicializar el reproductor cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            new StereoRevelacionPlayer();
+        });
+    </script>
+</body>
+</html>
