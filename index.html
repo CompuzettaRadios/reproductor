@@ -6,136 +6,131 @@
   <title>Recientemente Sonadas</title>
   <style>
     body {
-      background: #111;
+      background-color: #111;
       color: #fff;
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 20px;
     }
-
     h1 {
-      color: #ff9900;
       text-align: center;
+      color: #ff9900;
       margin-bottom: 30px;
-      font-size: 1.8em;
     }
-
-    .grid {
-      display: grid;
+    #history {
+      display: flex;
+      flex-direction: column;
       gap: 15px;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      max-width: 1000px;
+      max-width: 800px;
       margin: auto;
     }
-
     .song {
-      background: #1e1e1e;
       display: flex;
       align-items: center;
-      padding: 12px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(255, 153, 0, 0.1);
+      background: #1c1c1c;
+      border-radius: 12px;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
       transition: background 0.3s;
     }
-
     .song:hover {
-      background: #2a2a2a;
+      background: #222;
     }
-
     .song img {
-      width: 64px;
-      height: 64px;
+      width: 80px;
+      height: 80px;
       border-radius: 8px;
       object-fit: cover;
       margin-right: 15px;
       flex-shrink: 0;
     }
-
-    .info {
+    .song-info {
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
-
     .artist {
       font-weight: bold;
       font-size: 1rem;
-      margin-bottom: 4px;
+      color: #fff;
+      margin-bottom: 5px;
     }
-
     .title {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: #ccc;
     }
 
-    @media screen and (max-width: 480px) {
-      .grid {
-        grid-template-columns: 1fr;
+    @media (min-width: 600px) {
+      #history {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       }
     }
   </style>
 </head>
 <body>
   <h1>🎧 Recientemente Sonadas</h1>
-  <div class="grid" id="history">Cargando historial...</div>
+  <div id="history">Cargando historial...</div>
 
   <script>
     const fallbackCover = "https://stereorevelacionradio.com/wp-content/uploads/2022/12/cropped-logo-radio.png";
 
     async function fetchHistory() {
-      try {
-        const proxyUrl = "https://api.allorigins.win/get?url=" +
-          encodeURIComponent("https://cast6.my-control-panel.com/proxy/manrique/played.html?sid=1");
+      const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://cast6.my-control-panel.com/proxy/manrique/played.html?sid=1");
 
+      try {
         const res = await fetch(proxyUrl);
         const data = await res.json();
         const html = data.contents;
 
         const matches = [...html.matchAll(/<td>([^<]+)<\/td>\s*<td>([^<]+)<\/td>/g)];
+        const historyContainer = document.getElementById("history");
+        historyContainer.innerHTML = "";
 
-        const container = document.getElementById("history");
-        container.innerHTML = "";
+        let uniqueSongs = new Set();
 
-        for (let i = 0; i < Math.min(matches.length, 10); i++) {
-          const artistRaw = matches[i][1].trim();
-          const titleRaw = matches[i][2].trim();
+        for (let i = 0; i < matches.length && uniqueSongs.size < 10; i++) {
+          const artist = matches[i][1].trim();
+          const title = matches[i][2].trim();
+          const songKey = (artist + " - " + title).toLowerCase();
 
-          if (!artistRaw || !titleRaw) continue;
+          if (uniqueSongs.has(songKey)) continue;
+          uniqueSongs.add(songKey);
 
-          const coverUrl = await fetchCover(`${artistRaw} ${titleRaw}`);
+          const coverUrl = await fetchCover(`${artist} ${title}`);
 
           const div = document.createElement("div");
           div.className = "song";
           div.innerHTML = `
-            <img src="${coverUrl}" alt="carátula" />
-            <div class="info">
-              <div class="artist">${artistRaw}</div>
-              <div class="title">${titleRaw}</div>
+            <img src="${coverUrl}" alt="Carátula" />
+            <div class="song-info">
+              <div class="artist">${artist}</div>
+              <div class="title">${title}</div>
             </div>
           `;
-          container.appendChild(div);
+          historyContainer.appendChild(div);
         }
-      } catch (err) {
-        document.getElementById("history").innerText = "Error al cargar el historial.";
-        console.error("Error cargando historial:", err);
+      } catch (error) {
+        document.getElementById("history").innerText = "Error al cargar historial.";
+        console.error("Error cargando historial:", error);
       }
     }
 
     async function fetchCover(query) {
       try {
-        const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=1`);
-        const json = await response.json();
+        const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&limit=1`);
+        const json = await res.json();
         if (json.results && json.results.length > 0) {
           return json.results[0].artworkUrl100.replace("100x100", "200x200");
         }
       } catch (e) {
-        console.warn("Error al buscar carátula:", e);
+        console.warn("Error obteniendo carátula:", e);
       }
       return fallbackCover;
     }
 
     fetchHistory();
-    setInterval(fetchHistory, 60000);
+    setInterval(fetchHistory, 60000); // cada minuto
   </script>
 </body>
 </html>
