@@ -31,29 +31,21 @@ class MusicPlayer {
     }
 
     async loadSongs() {
-        this.songs = [];
-        
-        for (const genre of this.genres) {
-            try {
-                // Intentar cargar la lista de archivos de cada carpeta
-                const songFiles = await this.getSongsFromFolder(genre);
-                
-                for (const file of songFiles) {
-                    this.songs.push({
-                        title: this.formatSongTitle(file),
-                        file: `mp3/${genre}/${file}`,
-                        genre: genre,
-                        cover: `mp3/${genre}/cover.jpg`,
-                        duration: '0:00'
-                    });
-                }
-            } catch (error) {
-                console.log(`No se pudieron cargar canciones de ${genre}:`, error);
-            }
-        }
-        
-        // Si no se pueden cargar automáticamente, usar lista manual
-        if (this.songs.length === 0) {
+        // Intentar cargar desde archivo generado automáticamente
+        if (window.SONGS_DATA) {
+            console.log('📊 Cargando datos automáticos:', window.SONGS_STATS);
+            this.songs = window.SONGS_DATA.map(song => ({
+                title: song.title,
+                artist: song.artist || 'Desconocido',
+                file: `mp3/${song.genre}/${song.file}`,
+                genre: song.genre,
+                cover: song.cover,
+                duration: song.duration,
+                dateAdded: song.dateAdded
+            }));
+        } else {
+            // Fallback: cargar manualmente
+            console.log('⚠️ No se encontraron datos automáticos, usando lista manual');
             this.loadManualSongs();
         }
         
@@ -145,7 +137,13 @@ class MusicPlayer {
         
         this.audio.src = song.file;
         this.songTitle.textContent = song.title;
-        this.songGenre.textContent = song.genre.charAt(0).toUpperCase() + song.genre.slice(1);
+        
+        // Mostrar artista si existe
+        const genreText = song.artist && song.artist !== 'Desconocido' 
+            ? `${song.artist} • ${song.genre.charAt(0).toUpperCase() + song.genre.slice(1)}`
+            : song.genre.charAt(0).toUpperCase() + song.genre.slice(1);
+            
+        this.songGenre.textContent = genreText;
         
         // Cargar imagen de carátula
         this.loadAlbumCover(song.cover);
@@ -238,11 +236,17 @@ class MusicPlayer {
         this.filteredSongs.forEach((song, index) => {
             const songItem = document.createElement('div');
             songItem.className = 'song-item';
+            
+            const artistInfo = song.artist && song.artist !== 'Desconocido' 
+                ? `<div class="song-artist">${song.artist}</div>` 
+                : '';
+            
             songItem.innerHTML = `
                 <img src="${song.cover}" alt="${song.title}" class="song-cover" 
                      onerror="this.src='${this.createDefaultCover()}'">
                 <div class="song-info">
                     <div class="song-title">${song.title}</div>
+                    ${artistInfo}
                     <div class="song-genre">${song.genre}</div>
                 </div>
                 <div class="song-duration">${song.duration}</div>
