@@ -1,0 +1,136 @@
+filterByGenre(genre) {
+                // Actualizar botones activos
+                this.filterBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.genre === genre);
+                });
+
+                if (genre === 'all') {
+                    this.filteredSongs = [...this.songs];
+                } else {
+                    this.filteredSongs = this.songs.filter(song => song.genre === genre);
+                }
+                
+                this.currentIndex = 0;
+                this.renderPlaylist();
+                
+                if (this.filteredSongs.length > 0) {
+                    this.loadSong(0);
+                } else {
+                    this.songTitle.textContent = 'No hay canciones en esta categoría';
+                    this.songGenre.textContent = '-';
+                    this.albumCover.src = this.createDefaultCover();
+                }
+            }
+
+            // Método para obtener duración real del archivo
+            async updateSongDuration(song, index) {
+                return new Promise((resolve) => {
+                    const tempAudio = new Audio();
+                    tempAudio.addEventListener('loadedmetadata', () => {
+                        const duration = this.formatTime(tempAudio.duration);
+                        song.duration = duration;
+                        
+                        // Actualizar en la lista si está visible
+                        const durationElements = document.querySelectorAll('.song-duration');
+                        if (durationElements[index]) {
+                            durationElements[index].textContent = duration;
+                        }
+                        
+                        resolve(duration);
+                    });
+                    
+                    tempAudio.addEventListener('error', () => {
+                        song.duration = 'Error';
+                        resolve('Error');
+                    });
+                    
+                    tempAudio.src = song.file;
+                });
+            }
+
+            // Cargar duraciones de todas las canciones (opcional, para mejor UX)
+            async loadAllDurations() {
+                console.log('🕐 Cargando duraciones de archivos...');
+                
+                for (let i = 0; i < this.songs.length; i++) {
+                    const song = this.songs[i];
+                    if (song.duration === '0:00') {
+                        await this.updateSongDuration(song, i);
+                        
+                        // Pequeña pausa para no sobrecargar
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
+                
+                console.log('✅ Duraciones cargadas');
+                this.renderPlaylist(); // Re-renderizar con duraciones actualizadas
+            }
+
+            // Método para detectar si hay nuevos archivos
+            async checkForNewFiles() {
+                const currentCount = this.songs.length;
+                await this.loadSongs();
+                const newCount = this.songs.length;
+                
+                if (newCount > currentCount) {
+                    this.showMessage(`🎉 Se encontraron ${newCount - currentCount} nuevas canciones`, 'success');
+                } else if (newCount < currentCount) {
+                    this.showMessage(`📝 Se actualizó la lista (${newCount} canciones total)`, 'info');
+                } else {
+                    this.showMessage('✅ La lista está actualizada', 'success');
+                }
+            }
+
+            // Método para manejar atajos de teclado
+            setupKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    // Solo funcionar si no estamos escribiendo en el input de búsqueda
+                    if (e.target === this.searchInput) return;
+                    
+                    switch(e.code) {
+                        case 'Space':
+                            e.preventDefault();
+                            this.togglePlay();
+                            break;
+                        case 'ArrowLeft':
+                            e.preventDefault();
+                            this.previousSong();
+                            break;
+                        case 'ArrowRight':
+                            e.preventDefault();
+                            this.nextSong();
+                            break;
+                        case 'KeyR':
+                            if (e.ctrlKey || e.metaKey) {
+                                e.preventDefault();
+                                this.refreshSongs();
+                            }
+                            break;
+                    }
+                });
+            }
+
+            // Inicializar todo
+            init() {
+                this.setupKeyboardShortcuts();
+                
+                // Cargar duraciones después de que se carguen las canciones
+                setTimeout(() => {
+                    if (this.songs.length > 0) {
+                        this.loadAllDurations();
+                    }
+                }, 2000);
+            }
+        }
+
+        // Inicializar el reproductor cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            const player = new MusicPlayer();
+            player.init();
+            
+            // Auto-refresh cada 5 minutos para detectar nuevos archivos
+            setInterval(() => {
+                console.log('🔄 Verificación automática de nuevos archivos...');
+                player.checkForNewFiles();
+            }, 300000); // 5 minutos
+        });
