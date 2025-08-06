@@ -395,7 +395,7 @@
     <div class="container">
         <header>
             <h1>🎵 Alabanzas Cantadas</h1>
-            <p>Colección de coros, himnos y testimonios</p>
+            <p>Colección de coros, himnos, testimonios y más</p>
         </header>
 
         <div id="loading" class="loading">
@@ -451,8 +451,8 @@
         </div>
 
         <div class="credits">
-            Diseñado por <strong>Nestor Manrique</strong> | 
-            <a href="mailto:nestormanrique@example.com">nestormanrique@example.com</a>
+            Diseñado por <strong>Nestor M. - 2025</strong> | 
+            <a href="mailto:compuzetta@gmail.com">compuzetta@gmaiil.com</a>
         </div>
     </div>
 
@@ -814,11 +814,113 @@
             }
 
             renderPlaylist() {
-                // Este método será implementado con el código personalizado
+                this.playlist.innerHTML = '';
+                
+                if (this.filteredSongs.length === 0) {
+                    this.playlist.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #7f8c8d; font-style: italic;">
+                            No se encontraron alabanzas
+                        </div>`;
+                    return;
+                }
+                
+                this.filteredSongs.forEach((song, index) => {
+                    const songItem = document.createElement('div');
+                    songItem.className = 'playlist-item';
+                    songItem.style.cssText = `
+                        display: flex;
+                        align-items: center;
+                        padding: 12px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        margin-bottom: 8px;
+                        border: 1px solid transparent;
+                    `;
+                    
+                    songItem.innerHTML = `
+                        <img src="${song.cover}" alt="${song.title}" 
+                             style="width: 48px; height: 48px; border-radius: 6px; object-fit: cover; margin-right: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+                             onerror="this.src='${this.createDefaultCover()}'">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 600; font-size: 14px; color: #2c3e50; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${song.title}
+                            </div>
+                            <div style="font-size: 12px; color: #7f8c8d;">
+                                ${song.artist} • ${song.genre.charAt(0).toUpperCase() + song.genre.slice(1)}
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #95a5a6; min-width: 35px; text-align: right;">
+                            ${song.duration}
+                        </div>
+                    `;
+                    
+                    // Eventos hover
+                    songItem.addEventListener('mouseenter', () => {
+                        if (!songItem.classList.contains('active')) {
+                            songItem.style.backgroundColor = '#f8f9fa';
+                            songItem.style.borderColor = '#e9ecef';
+                            songItem.style.transform = 'translateX(4px)';
+                        }
+                    });
+                    
+                    songItem.addEventListener('mouseleave', () => {
+                        if (!songItem.classList.contains('active')) {
+                            songItem.style.backgroundColor = 'transparent';
+                            songItem.style.borderColor = 'transparent';
+                            songItem.style.transform = 'translateX(0)';
+                        }
+                    });
+                    
+                    // Click para reproducir
+                    songItem.addEventListener('click', () => {
+                        this.loadSong(index);
+                        if (!this.isPlaying) {
+                            this.togglePlay();
+                        }
+                    });
+                    
+                    this.playlist.appendChild(songItem);
+                });
+
+                this.updateActiveItem();
             }
 
             updateActiveItem() {
-                // Este método será implementado con el código personalizado
+                const items = this.playlist.querySelectorAll('.playlist-item');
+                items.forEach((item, index) => {
+                    const isActive = index === this.currentIndex;
+                    item.classList.toggle('active', isActive);
+                    
+                    if (isActive) {
+                        item.style.backgroundColor = '#3498db';
+                        item.style.borderColor = '#2980b9';
+                        item.style.color = 'white';
+                        item.style.transform = 'translateX(0)';
+                        
+                        // Cambiar color del texto en el item activo
+                        const titleDiv = item.querySelector('div > div:first-child');
+                        const artistDiv = item.querySelector('div > div:nth-child(2)');
+                        const durationDiv = item.querySelector('div:last-child');
+                        
+                        if (titleDiv) titleDiv.style.color = 'white';
+                        if (artistDiv) artistDiv.style.color = 'rgba(255,255,255,0.9)';
+                        if (durationDiv) durationDiv.style.color = 'rgba(255,255,255,0.8)';
+                    } else {
+                        item.style.backgroundColor = 'transparent';
+                        item.style.borderColor = 'transparent';
+                        item.style.color = '#2c3e50';
+                        
+                        // Restaurar colores originales
+                        const titleDiv = item.querySelector('div > div:first-child');
+                        const artistDiv = item.querySelector('div > div:nth-child(2)');
+                        const durationDiv = item.querySelector('div:last-child');
+                        
+                        if (titleDiv) titleDiv.style.color = '#2c3e50';
+                        if (artistDiv) artistDiv.style.color = '#7f8c8d';
+                        if (durationDiv) durationDiv.style.color = '#95a5a6';
+                    }
+                });
             }
 
             filterSongs(searchTerm) {
