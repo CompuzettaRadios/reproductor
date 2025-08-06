@@ -269,23 +269,44 @@ function updateFileGenre(id, genre) {
             updateStats();
         }
 
-        function generateCode() {
-            if (files.length === 0) {
-                showMessage('No hay archivos para generar código', 'error');
-                return;
-            }
 
-            const songs = files.map(f => ({
-                title: f.title,
-                artist: f.artist || 'Desconocido',
-                file: `mp3/${f.genre}/${f.artist ? f.artist.toLowerCase().replace(/\s+/g, '_') + '/' : ''}${f.name}`,
-                genre: f.genre,
-                cover: `mp3/${f.genre}/${f.artist ? f.artist.toLowerCase().replace(/\s+/g, '_') + '/' : ''}cover.jpg`,
-                duration: '0:00'
-            }));
+function generateCode() {
+    if (files.length === 0) {
+        showMessage('No hay archivos para generar código', 'error');
+        return;
+    }
 
-            const code = `async loadSongs() {
+    const songs = files.map(f => ({
+        title: f.title,
+        artist: f.artist || 'Desconocido',
+        file: `mp3/${f.genre}/${f.artist ? f.artist.toLowerCase().replace(/\s+/g, '_') + '/' : ''}${f.name}`,
+        genre: f.genre,
+        cover: `mp3/${f.genre}/${f.artist ? f.artist.toLowerCase().replace(/\s+/g, '_') + '/' : ''}cover.jpg`,
+        duration: '0:00'
+    }));
+
+    // Crear estadísticas dinámicas basadas en los géneros creados
+    const statsCode = genres.map(genre => 
+        `${genre}: this.songs.filter(s => s.genre === '${genre}').length`
+    ).join(',\n        ');
+
+    const code = `async loadSongs() {
     this.songs = ${JSON.stringify(songs, null, 4)};
+    
+    // Calcular estadísticas
+    const stats = { 
+        total: this.songs.length,
+        ${statsCode}
+    };
+    
+    this.showStats(stats);
+    
+    if (this.songs.length > 0) {
+        this.showMessage(\`✅ \${this.songs.length} canciones cargadas exitosamente\`, 'success');
+        console.log('📚 Canciones cargadas:', this.songs);
+    } else {
+        this.showMessage('⚠️ No se encontraron archivos MP3.', 'error');
+    }
     
     this.filteredSongs = [...this.songs];
     this.renderPlaylist();
@@ -293,12 +314,18 @@ function updateFileGenre(id, genre) {
     if (this.songs.length > 0) {
         this.loadSong(0);
     }
+    
+    // Ocultar loading y mostrar contenido
+    setTimeout(() => {
+        this.loading.style.display = 'none';
+        this.mainContent.style.display = 'block';
+    }, 1000);
 }`;
 
-            document.getElementById('codeOutput').textContent = code;
-            document.getElementById('codeOutput').classList.remove('hidden');
-            showMessage('Código generado', 'success');
-        }
+    document.getElementById('codeOutput').textContent = code;
+    document.getElementById('codeOutput').classList.remove('hidden');
+    showMessage('Código generado', 'success');
+}
 
         function showMessage(text, type) {
             const area = document.getElementById('messageArea');
