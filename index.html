@@ -35,14 +35,14 @@
         }
 
         header h1 {
-            font-size: clamp(2em, 5vw, 3em);
+            font-size: clamp(1.5em, 4vw, 3em);
             font-weight: 300;
             margin-bottom: 8px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         header p {
-            font-size: clamp(1em, 2.5vw, 1.2em);
+            font-size: clamp(0.9em, 2vw, 1.2em);
             opacity: 0.9;
             font-weight: 300;
         }
@@ -174,6 +174,10 @@
             background: #2980b9;
         }
 
+        #shuffleBtn.active {
+            background: #e74c3c;
+        }
+
         /* Progress Section */
         .progress-section {
             display: flex;
@@ -198,6 +202,34 @@
             background: #3498db;
             border-radius: 2px;
             transition: width 0.1s ease;
+        }
+
+        /* Volume Control */
+        .volume-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        #volumeSlider {
+            flex: 1;
+            height: 3px;
+            background: #ecf0f1;
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        #volumeSlider::-webkit-slider-thumb {
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
         }
 
         /* Stats */
@@ -327,6 +359,15 @@
                 padding: 10px;
             }
 
+            header h1 {
+                font-size: 1.8em;
+                line-height: 1.2;
+            }
+
+            header p {
+                font-size: 0.9em;
+            }
+
             .card {
                 border-radius: 8px;
             }
@@ -367,6 +408,15 @@
                 height: 48px;
                 font-size: 16px;
             }
+
+            .track-info h3 {
+                font-size: 16px;
+                line-height: 1.3;
+            }
+
+            .track-info p {
+                font-size: 13px;
+            }
         }
 
         /* Small Mobile */
@@ -382,11 +432,12 @@
             }
 
             .track-info h3 {
-                font-size: 16px;
+                font-size: 14px;
+                line-height: 1.2;
             }
 
             .track-info p {
-                font-size: 13px;
+                font-size: 12px;
             }
         }
     </style>
@@ -418,6 +469,7 @@
                             <p id="songArtist">-</p>
                         </div>
                         <div class="player-controls">
+                            <button id="shuffleBtn" class="control-btn" title="Aleatorio">🔀</button>
                             <button id="prevBtn" class="control-btn">⏮</button>
                             <button id="playBtn" class="control-btn">▶</button>
                             <button id="nextBtn" class="control-btn">⏭</button>
@@ -430,6 +482,12 @@
                             <div class="progress" id="progress"></div>
                         </div>
                         <span id="duration">0:00</span>
+                    </div>
+
+                    <div class="volume-section">
+                        <span>🔊</span>
+                        <input type="range" id="volumeSlider" min="0" max="100" value="80">
+                        <span id="volumeValue">80%</span>
                     </div>
 
                     <audio id="audioPlayer"></audio>
@@ -463,6 +521,7 @@
                 this.filteredSongs = [];
                 this.currentIndex = 0;
                 this.isPlaying = false;
+                this.isShuffled = false;
                 this.audio = document.getElementById('audioPlayer');
                 
                 this.initializeElements();
@@ -474,6 +533,7 @@
                 this.playBtn = document.getElementById('playBtn');
                 this.prevBtn = document.getElementById('prevBtn');
                 this.nextBtn = document.getElementById('nextBtn');
+                this.shuffleBtn = document.getElementById('shuffleBtn');
                 this.progress = document.getElementById('progress');
                 this.progressBar = document.querySelector('.progress-bar');
                 this.currentTime = document.getElementById('currentTime');
@@ -488,10 +548,12 @@
                 this.mainContent = document.getElementById('mainContent');
                 this.stats = document.getElementById('stats');
                 this.messages = document.getElementById('messages');
+                this.volumeSlider = document.getElementById('volumeSlider');
+                this.volumeValue = document.getElementById('volumeValue');
             }
 
             // ======================== INICIO SECCIÓN A REEMPLAZAR ========================
-          async loadSongs() {
+ async loadSongs() {
     this.songs = [
     {
         "title": "1.  Adoradle",
@@ -672,13 +734,18 @@
                 this.playBtn.addEventListener('click', () => this.togglePlay());
                 this.prevBtn.addEventListener('click', () => this.previousSong());
                 this.nextBtn.addEventListener('click', () => this.nextSong());
+                this.shuffleBtn.addEventListener('click', () => this.toggleShuffle());
                 this.refreshBtn.addEventListener('click', () => this.refreshSongs());
                 this.progressBar.addEventListener('click', (e) => this.setProgress(e));
+                this.volumeSlider.addEventListener('input', (e) => this.setVolume(e.target.value));
                 this.audio.addEventListener('timeupdate', () => this.updateProgress());
                 this.audio.addEventListener('ended', () => this.nextSong());
                 this.audio.addEventListener('loadedmetadata', () => this.updateDuration());
                 this.audio.addEventListener('error', (e) => this.handleAudioError(e));
                 this.searchInput.addEventListener('input', (e) => this.filterSongs(e.target.value));
+
+                // Establecer volumen inicial
+                this.setVolume(80);
 
                 document.addEventListener('keydown', (e) => {
                     if (e.target === this.searchInput) return;
@@ -698,6 +765,17 @@
                             break;
                     }
                 });
+            }
+
+            toggleShuffle() {
+                this.isShuffled = !this.isShuffled;
+                this.shuffleBtn.classList.toggle('active', this.isShuffled);
+                this.showMessage(this.isShuffled ? '🔀 Modo aleatorio activado' : '➡️ Modo secuencial activado', 'info');
+            }
+
+            setVolume(value) {
+                this.audio.volume = value / 100;
+                this.volumeValue.textContent = `${value}%`;
             }
 
             async refreshSongs() {
@@ -774,9 +852,23 @@
                 }
             }
 
+            getNextIndex() {
+                if (this.isShuffled) {
+                    return Math.floor(Math.random() * this.filteredSongs.length);
+                }
+                return this.currentIndex < this.filteredSongs.length - 1 ? this.currentIndex + 1 : 0;
+            }
+
+            getPrevIndex() {
+                if (this.isShuffled) {
+                    return Math.floor(Math.random() * this.filteredSongs.length);
+                }
+                return this.currentIndex > 0 ? this.currentIndex - 1 : this.filteredSongs.length - 1;
+            }
+
             previousSong() {
                 if (this.filteredSongs.length === 0) return;
-                const newIndex = this.currentIndex > 0 ? this.currentIndex - 1 : this.filteredSongs.length - 1;
+                const newIndex = this.getPrevIndex();
                 this.loadSong(newIndex);
                 if (this.isPlaying) {
                     this.audio.play();
@@ -785,7 +877,7 @@
 
             nextSong() {
                 if (this.filteredSongs.length === 0) return;
-                const newIndex = this.currentIndex < this.filteredSongs.length - 1 ? this.currentIndex + 1 : 0;
+                const newIndex = this.getNextIndex();
                 this.loadSong(newIndex);
                 if (this.isPlaying) {
                     this.audio.play();
@@ -895,7 +987,7 @@
                     this.playlist.appendChild(songItem);
                 });
 
-                this.updateActiveItem();
+this.updateActiveItem();
             }
 
             updateActiveItem() {
