@@ -102,19 +102,20 @@
             return filename.replace(/\.(mp3|MP3)$/, '').replace(/[-_]/g, ' ');
         }
 
-        function addGenre() {
-            const input = document.getElementById('newGenre');
-            const genre = input.value.trim().toLowerCase();
-            
-            if (genre && !genres.includes(genre)) {
-                genres.push(genre);
-                artists[genre] = [];
-                input.value = '';
-                updateGenreDisplay();
-                updateArtistGenreSelect();
-                showMessage(`Género "${genre}" agregado`, 'success');
-            }
-        }
+function addGenre() {
+    const input = document.getElementById('newGenre');
+    const genre = input.value.trim().toLowerCase();
+    
+    if (genre && !genres.includes(genre)) {
+        genres.push(genre);
+        artists[genre] = [];
+        input.value = '';
+        updateGenreDisplay();
+        updateArtistGenreSelect();
+        updateFileDisplay(); // Agregar esta línea
+        showMessage(`Género "${genre}" agregado`, 'success');
+    }
+}
 
         function removeGenre(genre) {
             genres = genres.filter(g => g !== genre);
@@ -131,19 +132,20 @@
             showMessage(`Género "${genre}" eliminado`, 'success');
         }
 
-        function addArtist() {
-            const nameInput = document.getElementById('newArtist');
-            const genreSelect = document.getElementById('artistGenre');
-            const artist = nameInput.value.trim();
-            const genre = genreSelect.value;
-            
-            if (artist && genre && !artists[genre].includes(artist)) {
-                artists[genre].push(artist);
-                nameInput.value = '';
-                updateArtistDisplay();
-                showMessage(`Artista "${artist}" agregado al género "${genre}"`, 'success');
-            }
-        }
+function addArtist() {
+    const nameInput = document.getElementById('newArtist');
+    const genreSelect = document.getElementById('artistGenre');
+    const artist = nameInput.value.trim();
+    const genre = genreSelect.value;
+    
+    if (artist && genre && !artists[genre].includes(artist)) {
+        artists[genre].push(artist);
+        nameInput.value = '';
+        updateArtistDisplay();
+        updateFileDisplay(); // Agregar esta línea
+        showMessage(`Artista "${artist}" agregado al género "${genre}"`, 'success');
+    }
+}
 
         function removeArtist(genre, artist) {
             artists[genre] = artists[genre].filter(a => a !== artist);
