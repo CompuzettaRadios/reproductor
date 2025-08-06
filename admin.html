@@ -665,7 +665,7 @@
                 this.uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
                 this.uploadArea.addEventListener('dragleave', (e) => this.handleDragLeave(e));
                 this.uploadArea.addEventListener('drop', (e) => this.handleDrop(e));
-                this.uploadArea.addEventListener('click', () => this.fileInput.click());
+                // LÍNEA REMOVIDA: this.uploadArea.addEventListener('click', () => this.fileInput.click());
                 
                 // Config changes
                 Object.values(this.configInputs).forEach(input => {
@@ -844,7 +844,7 @@
                 this.showMessage('🗑️ Archivo eliminado', 'info');
             }
 
-applyBulkEdit() {
+            applyBulkEdit() {
     const artistName = this.bulkArtistName.value.trim();
     const genre = this.bulkGenre.value;
     
