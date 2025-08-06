@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Albanzas</title>
+    <title>Reproductor de Alabanzas</title>
     <style>
         * {
             margin: 0;
@@ -13,120 +13,142 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
             min-height: 100vh;
-            color: #333;
-            padding: 10px;
+            color: #2c3e50;
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
         }
 
         header {
             text-align: center;
-            margin-bottom: 20px;
             color: white;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
         }
 
         header h1 {
-            font-size: clamp(1.8em, 4vw, 2.5em);
-            margin-bottom: 5px;
+            font-size: clamp(2em, 5vw, 3em);
+            font-weight: 300;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         header p {
-            font-size: clamp(0.9em, 2vw, 1.1em);
+            font-size: clamp(1em, 2.5vw, 1.2em);
             opacity: 0.9;
+            font-weight: 300;
         }
 
-        .player-card {
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .card {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            padding: 20px;
-            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
 
-        .search-section {
+        /* Control Section */
+        .control-section {
+            padding: 25px;
+        }
+
+        .search-bar {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 25px;
         }
 
         #searchInput {
             flex: 1;
-            min-width: 200px;
-            padding: 12px 20px;
-            border: 2px solid #e1e5e9;
-            border-radius: 25px;
+            padding: 12px 18px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
             font-size: 16px;
-            outline: none;
             transition: all 0.3s ease;
+            background: #fdfdfd;
         }
 
         #searchInput:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+            border-color: #3498db;
+            background: white;
         }
 
-        .refresh-btn {
-            background: #667eea;
-            color: white;
-            border: none;
+        .btn {
             padding: 12px 20px;
-            border-radius: 25px;
+            border: none;
+            border-radius: 8px;
             cursor: pointer;
+            font-weight: 500;
             transition: all 0.3s ease;
-            white-space: nowrap;
+            font-size: 14px;
         }
 
-        .refresh-btn:hover {
-            background: #5a67d8;
-            transform: translateY(-2px);
+        .btn-primary {
+            background: #3498db;
+            color: white;
         }
 
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        /* Player Section */
         .player-section {
             display: grid;
             grid-template-columns: auto 1fr auto;
             gap: 20px;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid #ecf0f1;
         }
 
-        .album-art img {
+        .album-cover {
             width: 80px;
             height: 80px;
-            border-radius: 12px;
+            border-radius: 8px;
             object-fit: cover;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .song-info h3 {
-            font-size: 1.2em;
-            margin-bottom: 5px;
-            color: #333;
+        .track-info h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 4px;
         }
 
-        .song-info p {
-            color: #666;
-            font-size: 0.9em;
+        .track-info p {
+            font-size: 14px;
+            color: #7f8c8d;
         }
 
-        .controls {
+        .player-controls {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             align-items: center;
         }
 
-        .controls button {
-            width: 45px;
-            height: 45px;
+        .control-btn {
+            width: 44px;
+            height: 44px;
             border: none;
             border-radius: 50%;
-            background: #667eea;
+            background: #34495e;
             color: white;
             font-size: 16px;
             cursor: pointer;
@@ -136,172 +158,182 @@
             justify-content: center;
         }
 
-        .controls button:hover {
-            background: #5a67d8;
+        .control-btn:hover {
+            background: #2c3e50;
             transform: scale(1.05);
         }
 
         #playBtn {
-            width: 50px;
-            height: 50px;
+            width: 52px;
+            height: 52px;
             font-size: 18px;
+            background: #3498db;
         }
 
+        #playBtn:hover {
+            background: #2980b9;
+        }
+
+        /* Progress Section */
         .progress-section {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 0.85em;
-            color: #666;
+            gap: 12px;
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-top: 15px;
         }
 
         .progress-bar {
             flex: 1;
-            height: 6px;
-            background: #e1e5e9;
-            border-radius: 3px;
+            height: 4px;
+            background: #ecf0f1;
+            border-radius: 2px;
             cursor: pointer;
             overflow: hidden;
         }
 
         .progress {
             height: 100%;
-            background: #667eea;
-            border-radius: 3px;
+            background: #3498db;
+            border-radius: 2px;
             transition: width 0.1s ease;
         }
 
-        .playlist-section h2 {
-            margin-bottom: 15px;
-            color: #333;
-            font-size: 1.3em;
-        }
-
+        /* Stats */
         .stats {
             text-align: center;
-            margin-bottom: 15px;
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .playlist {
-            max-height: 400px;
-            overflow-y: auto;
-            border-radius: 10px;
-        }
-
-        .playlist::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .playlist::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-
-        .playlist::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 3px;
-        }
-
-        .song-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 5px;
-        }
-
-        .song-item:hover {
+            padding: 15px;
             background: #f8f9fa;
-            transform: translateX(3px);
+            font-size: 14px;
+            color: #6c757d;
+            border-bottom: 1px solid #ecf0f1;
         }
 
-        .song-item.active {
-            background: #667eea;
-            color: white;
+        /* Playlist Section */
+        .playlist-section {
+            padding: 25px;
         }
 
-        .song-cover {
-            width: 40px;
-            height: 40px;
-            border-radius: 6px;
-            object-fit: cover;
-            margin-right: 12px;
-        }
-
-        .song-details {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .song-title {
+        .playlist-header {
+            font-size: 20px;
             font-weight: 600;
-            font-size: 0.95em;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .song-artist {
-            font-size: 0.8em;
-            opacity: 0.7;
-        }
-
-        .song-duration {
-            font-size: 0.85em;
-            color: #999;
-        }
-
-        .song-item.active .song-duration,
-        .song-item.active .song-artist {
-            color: rgba(255,255,255,0.8);
-        }
-
-        .message {
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
+            color: #2c3e50;
+            margin-bottom: 20px;
             text-align: center;
-            font-size: 0.9em;
         }
 
-        .error-message {
+        .playlist-container {
+            /* Aquí se insertará el código personalizado */
+        }
+
+        /* Messages */
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .message.error {
             background: #fee;
             color: #c33;
+            border: 1px solid #fcc;
         }
 
-        .success-message {
+        .message.success {
             background: #efe;
             color: #090;
+            border: 1px solid #cfc;
         }
 
-        .info-message {
+        .message.info {
             background: #e3f2fd;
             color: #1976d2;
+            border: 1px solid #bbdefb;
         }
 
         .loading {
             text-align: center;
             color: white;
-            padding: 20px;
-            font-size: 1.1em;
+            padding: 40px;
+            font-size: 18px;
+            font-weight: 300;
         }
 
-        .no-songs {
+        /* Credits */
+        .credits {
             text-align: center;
-            color: #666;
-            padding: 30px;
-            font-style: italic;
+            color: rgba(255,255,255,0.8);
+            font-size: 12px;
+            margin-top: 20px;
+            padding: 15px;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            body {
-                padding: 5px;
+        .credits a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+        }
+
+        .credits a:hover {
+            color: white;
+        }
+
+        /* Desktop Layout */
+        @media (min-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 400px 1fr;
+            }
+            
+            .player-section {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .album-cover {
+                width: 120px;
+                height: 120px;
+                margin: 0 auto;
+            }
+
+            .player-controls {
+                justify-content: center;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .main-layout {
+                grid-template-columns: 420px 1fr;
+            }
+        }
+
+        /* Tablet Layout */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .main-layout {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .player-section {
+                grid-template-columns: auto 1fr;
+                gap: 15px;
+            }
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 767px) {
+            .container {
+                padding: 10px;
+            }
+
+            .card {
+                border-radius: 8px;
+            }
+
+            .control-section,
+            .playlist-section {
+                padding: 20px;
             }
 
             .player-section {
@@ -310,52 +342,51 @@
                 text-align: center;
             }
 
-            .song-info h3 {
-                font-size: 1.1em;
+            .album-cover {
+                width: 100px;
+                height: 100px;
+                margin: 0 auto;
             }
 
-            .search-section {
+            .player-controls {
+                justify-content: center;
+            }
+
+            .search-bar {
                 flex-direction: column;
             }
 
-            #searchInput {
-                min-width: 100%;
-            }
-
-            .playlist {
-                max-height: 300px;
-            }
-
-            .controls button {
+            .control-btn {
                 width: 40px;
                 height: 40px;
                 font-size: 14px;
             }
 
             #playBtn {
-                width: 45px;
-                height: 45px;
+                width: 48px;
+                height: 48px;
                 font-size: 16px;
             }
         }
 
+        /* Small Mobile */
         @media (max-width: 480px) {
-            .player-card {
+            .control-section,
+            .playlist-section {
                 padding: 15px;
             }
 
-            .song-item {
-                padding: 10px;
+            .album-cover {
+                width: 80px;
+                height: 80px;
             }
 
-            .song-cover {
-                width: 35px;
-                height: 35px;
+            .track-info h3 {
+                font-size: 16px;
             }
 
-            .album-art img {
-                width: 60px;
-                height: 60px;
+            .track-info p {
+                font-size: 13px;
             }
         }
     </style>
@@ -363,58 +394,70 @@
 <body>
     <div class="container">
         <header>
-            <h1>📖 Himnario Digital</h1>
-            <p>Colección de alabanzas variadas</p>
+            <h1>🎵 Alabanzas Cantadas</h1>
+            <p>Colección de coros, himnos y testimonios</p>
         </header>
 
         <div id="loading" class="loading">
-            Cargando himnos...
+            Cargando alabanzas...
         </div>
 
         <div id="mainContent" style="display: none;">
-            <div class="player-card">
-                <div class="search-section">
-                    <input type="text" id="searchInput" placeholder="Buscar himno...">
-                    <button class="refresh-btn" id="refreshBtn">🔄 Actualizar</button>
+            <div class="main-layout">
+                <!-- Control Panel -->
+                <div class="card control-section">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Buscar alabanza...">
+                        <button class="btn btn-primary" id="refreshBtn">🔄</button>
+                    </div>
+
+                    <div class="player-section">
+                        <img id="albumCover" src="" alt="Carátula" class="album-cover">
+                        <div class="track-info">
+                            <h3 id="songTitle">Selecciona una alabanza</h3>
+                            <p id="songArtist">-</p>
+                        </div>
+                        <div class="player-controls">
+                            <button id="prevBtn" class="control-btn">⏮</button>
+                            <button id="playBtn" class="control-btn">▶</button>
+                            <button id="nextBtn" class="control-btn">⏭</button>
+                        </div>
+                    </div>
+
+                    <div class="progress-section">
+                        <span id="currentTime">0:00</span>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress"></div>
+                        </div>
+                        <span id="duration">0:00</span>
+                    </div>
+
+                    <audio id="audioPlayer"></audio>
                 </div>
 
-                <div class="player-section">
-                    <div class="album-art">
-                        <img id="albumCover" src="" alt="Carátula">
+                <!-- Playlist -->
+                <div class="card playlist-section">
+                    <h2 class="playlist-header">Lista de Alabanzas</h2>
+                    <div id="stats" class="stats"></div>
+                    <div id="messages"></div>
+                    
+                    <!-- ======================== INICIO SECCIÓN A REEMPLAZAR ======================== -->
+                    <div id="playlist" class="playlist-container">
+                        <!-- Aquí se insertará tu código personalizado de la lista -->
                     </div>
-                    <div class="song-info">
-                        <h3 id="songTitle">Selecciona un himno</h3>
-                        <p id="songArtist">-</p>
-                    </div>
-                    <div class="controls">
-                        <button id="prevBtn">⏮</button>
-                        <button id="playBtn">▶</button>
-                        <button id="nextBtn">⏭</button>
-                    </div>
+                    <!-- ======================== FIN SECCIÓN A REEMPLAZAR ======================== -->
                 </div>
-
-                <div class="progress-section">
-                    <span id="currentTime">0:00</span>
-                    <div class="progress-bar">
-                        <div class="progress" id="progress"></div>
-                    </div>
-                    <span id="duration">0:00</span>
-                </div>
-
-                <audio id="audioPlayer"></audio>
             </div>
+        </div>
 
-            <div class="player-card playlist-section">
-                <h2>Lista de Himnos</h2>
-                <div id="stats" class="stats"></div>
-                <div id="messages"></div>
-                <div id="playlist" class="playlist"></div>
-            </div>
+        <div class="credits">
+            Diseñado por <strong>Nestor Manrique</strong> | 
+            <a href="mailto:nestormanrique@example.com">nestormanrique@example.com</a>
         </div>
     </div>
 
     <script>
-        class HymnPlayer {
+        class AlabanzasPlayer {
             constructor() {
                 this.songs = [];
                 this.filteredSongs = [];
@@ -449,155 +492,55 @@
 
             // ======================== INICIO SECCIÓN A REEMPLAZAR ========================
             async loadSongs() {
-    console.log('🎵 Cargando lista de canciones generada automáticamente...');
-    this.showMessage('Cargando canciones...', 'info');
-    
-    // Lista generada automáticamente por el Administrador de Música
-    // Última actualización: 5/8/2025, 21:29:07
-    // Total de archivos: 11
-    this.songs = [
-        {
-                "title": "1.  Adoradle",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/1.- Adoradle.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "1.- Adoradle.mp3"
-        },
-        {
-                "title": "2.  Dulce ComunióN",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/2.- Dulce Comunión.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "2.- Dulce Comunión.mp3"
-        },
-        {
-                "title": "3.  Cerca De Ti SeñOr",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/3.- Cerca de ti Señor.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "3.- Cerca de ti Señor.mp3"
-        },
-        {
-                "title": "4.  El Gran MéDico",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/4.- El gran médico.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "4.- El gran médico.mp3"
-        },
-        {
-                "title": "7.  Todo A Cristo Yo Me Rindo",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/7.- Todo a Cristo yo me rindo.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "7.- Todo a Cristo yo me rindo.mp3"
-        },
-        {
-                "title": "10.  MelodíAs Celestiales",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/10.- Melodías Celestiales.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "10.- Melodías Celestiales.mp3"
-        },
-        {
-                "title": "13.  Dulce OracióN",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/13.- Dulce Oración.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "13.- Dulce Oración.mp3"
-        },
-        {
-                "title": "14.  Oh Que Amigo",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/14.- Oh que amigo.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "14.- Oh que amigo.mp3"
-        },
-        {
-                "title": "22.  Oh Yo Quiero Andar Con Cristo",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/22.- Oh yo quiero andar con Cristo.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "22.- Oh yo quiero andar con Cristo.mp3"
-        },
-        {
-                "title": "29.  Digno Es El Cordero",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/29.- Digno es el cordero.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "29.- Digno es el cordero.mp3"
-        },
-        {
-                "title": "69.  Precioso Es JesúS",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/69.- Precioso es Jesús.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "69.- Precioso es Jesús.mp3"
-        }
-];
-    
-    // Calcular estadísticas
-    const stats = { 
-        total: this.songs.length,
-        coros: this.songs.filter(s => s.genre === 'coros').length,
-        himnos: this.songs.filter(s => s.genre === 'himnos').length,
-        testimoniales: this.songs.filter(s => s.genre === 'testimoniales').length,
-        especiales: this.songs.filter(s => s.genre === 'especiales').length
-    };
-    
-    this.showStats(stats);
-    
-    if (this.songs.length > 0) {
-        this.showMessage(`✅ ${this.songs.length} canciones cargadas exitosamente`, 'success');
-        console.log('📚 Canciones cargadas:', this.songs);
-    } else {
-        this.showMessage('⚠️ No se encontraron archivos MP3.', 'error');
-    }
-    
-    this.filteredSongs = [...this.songs];
-    this.renderPlaylist();
-    
-    if (this.songs.length > 0) {
-        this.loadSong(0);
-    }
-    
-    // Ocultar loading y mostrar contenido
-    setTimeout(() => {
-        this.loading.style.display = 'none';
-        this.mainContent.style.display = 'block';
-    }, 1000);
-}
+                console.log('🎵 Cargando lista de alabanzas...');
+                this.showMessage('Cargando alabanzas...', 'info');
+
+                // Aquí se insertará el código generado por el administrador
+                this.songs = [];
+
+                const stats = {
+                    total: this.songs.length,
+                    coros: this.songs.filter(s => s.genre === 'coros').length,
+                    himnos: this.songs.filter(s => s.genre === 'himnos').length,
+                    testimoniales: this.songs.filter(s => s.genre === 'testimoniales').length,
+                    especiales: this.songs.filter(s => s.genre === 'especiales').length
+                };
+
+                this.showStats(stats);
+
+                if (this.songs.length > 0) {
+                    this.showMessage(`✅ ${this.songs.length} alabanzas cargadas`, 'success');
+                } else {
+                    this.showMessage('⚠️ No se encontraron alabanzas', 'error');
+                }
+
+                this.filteredSongs = [...this.songs];
+                this.renderPlaylist();
+
+                if (this.songs.length > 0) {
+                    this.loadSong(0);
+                }
+
+                setTimeout(() => {
+                    this.loading.style.display = 'none';
+                    this.mainContent.style.display = 'block';
+                }, 1000);
+            }
             // ======================== FIN SECCIÓN A REEMPLAZAR ========================
 
             showStats(stats) {
-                this.stats.innerHTML = `Total de himnos: ${stats.total}`;
+                const parts = [];
+                if (stats.coros > 0) parts.push(`Coros: ${stats.coros}`);
+                if (stats.himnos > 0) parts.push(`Himnos: ${stats.himnos}`);
+                if (stats.testimoniales > 0) parts.push(`Testimoniales: ${stats.testimoniales}`);
+                if (stats.especiales > 0) parts.push(`Especiales: ${stats.especiales}`);
+                
+                this.stats.innerHTML = `Total: ${stats.total} alabanzas | ${parts.join(' • ')}`;
             }
 
             showMessage(text, type = 'info') {
-                const messageClass = type === 'error' ? 'error-message' : 
-                                   type === 'success' ? 'success-message' : 
-                                   'info-message';
+                const messageClass = type === 'error' ? 'error' : 
+                                   type === 'success' ? 'success' : 'info';
                 
                 this.messages.innerHTML = `<div class="message ${messageClass}">${text}</div>`;
                 
@@ -620,7 +563,6 @@
                 this.audio.addEventListener('error', (e) => this.handleAudioError(e));
                 this.searchInput.addEventListener('input', (e) => this.filterSongs(e.target.value));
 
-                // Atajos de teclado
                 document.addEventListener('keydown', (e) => {
                     if (e.target === this.searchInput) return;
                     
@@ -642,19 +584,15 @@
             }
 
             async refreshSongs() {
-                this.showMessage('Actualizando lista...', 'info');
+                this.showMessage('Actualizando...', 'info');
                 this.refreshBtn.disabled = true;
-                this.refreshBtn.textContent = '🔄 Actualizando...';
-                
                 await this.loadSongs();
-                
                 this.refreshBtn.disabled = false;
-                this.refreshBtn.textContent = '🔄 Actualizar';
             }
 
             handleAudioError(e) {
                 console.error('Error al cargar audio:', e);
-                this.showMessage(`Error al cargar: ${this.filteredSongs[this.currentIndex]?.title || 'archivo'}`, 'error');
+                this.showMessage(`Error: ${this.filteredSongs[this.currentIndex]?.title || 'archivo'}`, 'error');
             }
 
             loadSong(index) {
@@ -665,7 +603,7 @@
                 
                 this.audio.src = song.file;
                 this.songTitle.textContent = song.title;
-                this.songArtist.textContent = song.artist || 'Himno Tradicional';
+                this.songArtist.textContent = song.artist || 'Desconocido';
                 
                 this.loadAlbumCover(song.cover);
                 this.updateActiveItem();
@@ -684,16 +622,16 @@
 
             createDefaultCover() {
                 return `data:image/svg+xml,${encodeURIComponent(`
-                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
                         <defs>
                             <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                                <stop offset="0%" style="stop-color:#3498db;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#2c3e50;stop-opacity:1" />
                             </linearGradient>
                         </defs>
-                        <rect width="80" height="80" fill="url(#grad)"/>
-                        <text x="40" y="35" text-anchor="middle" font-family="Arial" font-size="16" fill="white">📖</text>
-                        <text x="40" y="50" text-anchor="middle" font-family="Arial" font-size="8" fill="white">Himno</text>
+                        <rect width="120" height="120" fill="url(#grad)"/>
+                        <text x="60" y="55" text-anchor="middle" font-family="Arial" font-size="24" fill="white">🎵</text>
+                        <text x="60" y="75" text-anchor="middle" font-family="Arial" font-size="12" fill="white">Alabanza</text>
                     </svg>
                 `)}`;
             }
@@ -771,51 +709,18 @@
             }
 
             renderPlaylist() {
-                this.playlist.innerHTML = '';
-                
-                if (this.filteredSongs.length === 0) {
-                    this.playlist.innerHTML = '<div class="no-songs">No se encontraron himnos.</div>';
-                    return;
-                }
-                
-                this.filteredSongs.forEach((song, index) => {
-                    const songItem = document.createElement('div');
-                    songItem.className = 'song-item';
-                    
-                    songItem.innerHTML = `
-                        <img src="${song.cover}" alt="${song.title}" class="song-cover" 
-                             onerror="this.src='${this.createDefaultCover()}'">
-                        <div class="song-details">
-                            <div class="song-title">${song.title}</div>
-                            <div class="song-artist">${song.artist}</div>
-                        </div>
-                        <div class="song-duration">${song.duration}</div>
-                    `;
-                    
-                    songItem.addEventListener('click', () => {
-                        this.loadSong(index);
-                        if (!this.isPlaying) {
-                            this.togglePlay();
-                        }
-                    });
-                    
-                    this.playlist.appendChild(songItem);
-                });
-
-                this.updateActiveItem();
+                // Este método será implementado con el código personalizado
             }
 
             updateActiveItem() {
-                const items = this.playlist.querySelectorAll('.song-item');
-                items.forEach((item, index) => {
-                    item.classList.toggle('active', index === this.currentIndex);
-                });
+                // Este método será implementado con el código personalizado
             }
 
             filterSongs(searchTerm) {
                 const filtered = this.songs.filter(song => 
                     song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    (song.artist && song.artist.toLowerCase().includes(searchTerm.toLowerCase()))
+                    (song.artist && song.artist.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    song.genre.toLowerCase().includes(searchTerm.toLowerCase())
                 );
                 
                 this.filteredSongs = filtered;
@@ -829,7 +734,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const player = new HymnPlayer();
+            const player = new AlabanzasPlayer();
         });
     </script>
 </body>
