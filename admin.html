@@ -209,7 +209,7 @@
                     </select>
                     <select onchange="updateFileArtist('${file.id}', this.value)">
                         <option value="">Seleccionar artista</option>
-                        ${file.genre && artists[file.genre] ? artists[file.genre].map(a => 
+                        ${file.genre && artists[file.genre] && artists[file.genre].length > 0 ? artists[file.genre].map(a => 
                             `<option value="${a}" ${a === file.artist ? 'selected' : ''}>${a}</option>`
                         ).join('') : ''}
                     </select>
@@ -230,6 +230,7 @@
                 file.artist = '';
                 updateFileDisplay();
                 updateStats();
+		setTimeout(() => updateFileDisplay(), 50);
             }
         }
 
