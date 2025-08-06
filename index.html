@@ -589,6 +589,15 @@
         "genre": "coros",
         "cover": "mp3/coros/hno_nestor/cover.jpg",
         "duration": "0:00"
+    },
+        
+    {
+        "title": "usa mi vida hno Néstor gutarra 2018",
+        "artist": "hno_nestor",
+        "file": "mp3/especiales/hno_nestor/usa mi vida_hno_Néstor_gutarra_2018.mp3",
+        "genre": "especiales",
+        "cover": "mp3/especiales/hno_nestor/cover.jpg",
+        "duration": "0:00"
     }
         
 ];
@@ -597,7 +606,8 @@
     const stats = { 
         total: this.songs.length,
         himnos: this.songs.filter(s => s.genre === 'himnos').length,
-        coros: this.songs.filter(s => s.genre === 'coros').length
+        coros: this.songs.filter(s => s.genre === 'coros').length,
+        especiales: this.songs.filter(s => s.genre === 'especiales').length
     };
 
 
