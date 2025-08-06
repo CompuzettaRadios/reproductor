@@ -492,131 +492,96 @@
 
             // ======================== INICIO SECCIÓN A REEMPLAZAR ========================
             async loadSongs() {
-    console.log('🎵 Cargando lista de canciones generada automáticamente...');
-    this.showMessage('Cargando canciones...', 'info');
-    
-    // Lista generada automáticamente por el Administrador de Música
-    // Última actualización: 5/8/2025, 22:10:11
-    // Total de archivos: 11
     this.songs = [
-        {
-                "title": "1.  Adoradle",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/1.- Adoradle.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "1.- Adoradle.mp3"
-        },
-        {
-                "title": "2.  Dulce ComunióN",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/2.- Dulce Comunión.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "2.- Dulce Comunión.mp3"
-        },
-        {
-                "title": "3.  Cerca De Ti SeñOr",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/3.- Cerca de ti Señor.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "3.- Cerca de ti Señor.mp3"
-        },
-        {
-                "title": "4.  El Gran MéDico",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/4.- El gran médico.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "4.- El gran médico.mp3"
-        },
-        {
-                "title": "7.  Todo A Cristo Yo Me Rindo",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/7.- Todo a Cristo yo me rindo.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "7.- Todo a Cristo yo me rindo.mp3"
-        },
-        {
-                "title": "10.  MelodíAs Celestiales",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/10.- Melodías Celestiales.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "10.- Melodías Celestiales.mp3"
-        },
-        {
-                "title": "13.  Dulce OracióN",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/13.- Dulce Oración.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "13.- Dulce Oración.mp3"
-        },
-        {
-                "title": "14.  Oh Que Amigo",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/14.- Oh que amigo.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "14.- Oh que amigo.mp3"
-        },
-        {
-                "title": "22.  Oh Yo Quiero Andar Con Cristo",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/22.- Oh yo quiero andar con Cristo.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "22.- Oh yo quiero andar con Cristo.mp3"
-        },
-        {
-                "title": "29.  Digno Es El Cordero",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/29.- Digno es el cordero.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "29.- Digno es el cordero.mp3"
-        },
-        {
-                "title": "69.  Precioso Es JesúS",
-                "artist": "Himno Tradicional",
-                "file": "mp3/himnos/69.- Precioso es Jesús.mp3",
-                "genre": "himnos",
-                "cover": "mp3/himnos/cover.jpg",
-                "duration": "0:00",
-                "filename": "69.- Precioso es Jesús.mp3"
-        }
-];
-    
-    // Calcular estadísticas
-    const stats = { 
-        total: this.songs.length,
-        coros: this.songs.filter(s => s.genre === 'coros').length,
-        himnos: this.songs.filter(s => s.genre === 'himnos').length,
-        testimoniales: this.songs.filter(s => s.genre === 'testimoniales').length,
-        especiales: this.songs.filter(s => s.genre === 'especiales').length
-    };
-    
-    this.showStats(stats);
-    
-    if (this.songs.length > 0) {
-        this.showMessage(`✅ ${this.songs.length} canciones cargadas exitosamente`, 'success');
-        console.log('📚 Canciones cargadas:', this.songs);
-    } else {
-        this.showMessage('⚠️ No se encontraron archivos MP3.', 'error');
+    {
+        "title": "1.  Adoradle",
+        "artist": "hna_libia",
+        "file": "mp3/himnos/hna_libia/1.- Adoradle.mp3",
+        "genre": "himnos",
+        "cover": "mp3/himnos/hna_libia/cover.jpg",
+        "duration": "0:00"
+    },
+    {
+        "title": "2.  Dulce Comunión",
+        "artist": "hna_libia",
+        "file": "mp3/himnos/hna_libia/2.- Dulce Comunión.mp3",
+        "genre": "himnos",
+        "cover": "mp3/himnos/hna_libia/cover.jpg",
+        "duration": "0:00"
+    },
+    {
+        "title": "3.  Cerca de ti Señor",
+        "artist": "hna_libia",
+        "file": "mp3/himnos/hna_libia/3.- Cerca de ti Señor.mp3",
+        "genre": "himnos",
+        "cover": "mp3/himnos/hna_libia/cover.jpg",
+        "duration": "0:00"
+    },
+    {
+        "title": "4.  El gran médico",
+        "artist": "hna_libia",
+        "file": "mp3/himnos/hna_libia/4.- El gran médico.mp3",
+        "genre": "himnos",
+        "cover": "mp3/himnos/hna_libia/cover.jpg",
+        "duration": "0:00"
+    },
+    {
+        "title": "7.  Todo a Cristo yo me rindo",
+        "artist": "hna_libia",
+        "file": "mp3/himnos/hna_libia/7.- Todo a Cristo yo me rindo.mp3",
+        "genre": "himnos",
+        "cover": "mp3/himnos/hna_libia/cover.jpg",
+        "duration": "0:00"
+    },
+    {
+        "title": "10.  Melodías Celestiales",
+        "artist": "hna_libia",
+        "file": "mp3/himnos/hna_libia/10.- Melodías Celestiales.mp3",
+        "genre": "himnos",
+        "cover": "mp3/himnos/hna_libia/cover.jpg",
+        "duration": "0:00"
+    },
+    {
+        "title": "13.  Dulce Oración",
+        "artist": "hna_libia",
+        "file": "mp3/himnos/hna_libia/13.- Dulce Oración.mp3",
+        "genre": "himnos",
+        "cover": "mp3/himnos/hna_libia/cover.jpg",
+        "duration": "0:00"
+    },
+    {
+        "title": "14.  Oh que amigo",
+        "artist": "hna_libia",
+        "file": "mp3/himnos/hna_libia/14.- Oh que amigo.mp3",
+        "genre": "himnos",
+        "cover": "mp3/himnos/hna_libia/cover.jpg",
+        "duration": "0:00"
+    },
+    {
+        "title": "22.  Oh yo quiero andar con Cristo",
+        "artist": "hna_libia",
+        "file": "mp3/himnos/hna_libia/22.- Oh yo quiero andar con Cristo.mp3",
+        "genre": "himnos",
+        "cover": "mp3/himnos/hna_libia/cover.jpg",
+        "duration": "0:00"
+    },
+    {
+        "title": "29.  Digno es el cordero",
+        "artist": "hna_libia",
+        "file": "mp3/himnos/hna_libia/29.- Digno es el cordero.mp3",
+        "genre": "himnos",
+        "cover": "mp3/himnos/hna_libia/cover.jpg",
+        "duration": "0:00"
+    },
+    {
+        "title": "69.  Precioso es Jesús",
+        "artist": "hna_libia",
+        "file": "mp3/himnos/hna_libia/69.- Precioso es Jesús.mp3",
+        "genre": "himnos",
+        "cover": "mp3/himnos/hna_libia/cover.jpg",
+        "duration": "0:00"
     }
+];
     
     this.filteredSongs = [...this.songs];
     this.renderPlaylist();
@@ -624,12 +589,6 @@
     if (this.songs.length > 0) {
         this.loadSong(0);
     }
-    
-    // Ocultar loading y mostrar contenido
-    setTimeout(() => {
-        this.loading.style.display = 'none';
-        this.mainContent.style.display = 'block';
-    }, 1000);
 }
             // ======================== FIN SECCIÓN A REEMPLAZAR ========================
 
