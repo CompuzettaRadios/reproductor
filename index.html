@@ -442,8 +442,56 @@
                     <div id="messages"></div>
                     
                     <!-- ======================== INICIO SECCIÓN A REEMPLAZAR ======================== -->
+                    <div id="playlist" class="playlist-container">
+                        <!-- Aquí se insertará tu código personalizado de la lista -->
+                    </div>
+                    <!-- ======================== FIN SECCIÓN A REEMPLAZAR ======================== -->
+                </div>
+            </div>
+        </div>
 
-                        async loadSongs() {
+        <div class="credits">
+            Diseñado por <strong>Nestor Manrique</strong> | 
+            <a href="mailto:nestormanrique@example.com">nestormanrique@example.com</a>
+        </div>
+    </div>
+
+    <script>
+        class AlabanzasPlayer {
+            constructor() {
+                this.songs = [];
+                this.filteredSongs = [];
+                this.currentIndex = 0;
+                this.isPlaying = false;
+                this.audio = document.getElementById('audioPlayer');
+                
+                this.initializeElements();
+                this.loadSongs();
+                this.setupEventListeners();
+            }
+
+            initializeElements() {
+                this.playBtn = document.getElementById('playBtn');
+                this.prevBtn = document.getElementById('prevBtn');
+                this.nextBtn = document.getElementById('nextBtn');
+                this.progress = document.getElementById('progress');
+                this.progressBar = document.querySelector('.progress-bar');
+                this.currentTime = document.getElementById('currentTime');
+                this.duration = document.getElementById('duration');
+                this.songTitle = document.getElementById('songTitle');
+                this.songArtist = document.getElementById('songArtist');
+                this.albumCover = document.getElementById('albumCover');
+                this.playlist = document.getElementById('playlist');
+                this.searchInput = document.getElementById('searchInput');
+                this.refreshBtn = document.getElementById('refreshBtn');
+                this.loading = document.getElementById('loading');
+                this.mainContent = document.getElementById('mainContent');
+                this.stats = document.getElementById('stats');
+                this.messages = document.getElementById('messages');
+            }
+
+            // ======================== INICIO SECCIÓN A REEMPLAZAR ========================
+            async loadSongs() {
     console.log('🎵 Cargando lista de canciones generada automáticamente...');
     this.showMessage('Cargando canciones...', 'info');
     
@@ -583,88 +631,6 @@
         this.mainContent.style.display = 'block';
     }, 1000);
 }
-               
-                    <!-- ======================== FIN SECCIÓN A REEMPLAZAR ======================== -->
-                </div>
-            </div>
-        </div>
-
-        <div class="credits">
-            Diseñado por <strong>Nestor Manrique</strong> | 
-            <a href="mailto:nestormanrique@example.com">nestormanrique@example.com</a>
-        </div>
-    </div>
-
-    <script>
-        class AlabanzasPlayer {
-            constructor() {
-                this.songs = [];
-                this.filteredSongs = [];
-                this.currentIndex = 0;
-                this.isPlaying = false;
-                this.audio = document.getElementById('audioPlayer');
-                
-                this.initializeElements();
-                this.loadSongs();
-                this.setupEventListeners();
-            }
-
-            initializeElements() {
-                this.playBtn = document.getElementById('playBtn');
-                this.prevBtn = document.getElementById('prevBtn');
-                this.nextBtn = document.getElementById('nextBtn');
-                this.progress = document.getElementById('progress');
-                this.progressBar = document.querySelector('.progress-bar');
-                this.currentTime = document.getElementById('currentTime');
-                this.duration = document.getElementById('duration');
-                this.songTitle = document.getElementById('songTitle');
-                this.songArtist = document.getElementById('songArtist');
-                this.albumCover = document.getElementById('albumCover');
-                this.playlist = document.getElementById('playlist');
-                this.searchInput = document.getElementById('searchInput');
-                this.refreshBtn = document.getElementById('refreshBtn');
-                this.loading = document.getElementById('loading');
-                this.mainContent = document.getElementById('mainContent');
-                this.stats = document.getElementById('stats');
-                this.messages = document.getElementById('messages');
-            }
-
-            // ======================== INICIO SECCIÓN A REEMPLAZAR ========================
-            async loadSongs() {
-                console.log('🎵 Cargando lista de alabanzas...');
-                this.showMessage('Cargando alabanzas...', 'info');
-
-                // Aquí se insertará el código generado por el administrador
-                this.songs = [];
-
-                const stats = {
-                    total: this.songs.length,
-                    coros: this.songs.filter(s => s.genre === 'coros').length,
-                    himnos: this.songs.filter(s => s.genre === 'himnos').length,
-                    testimoniales: this.songs.filter(s => s.genre === 'testimoniales').length,
-                    especiales: this.songs.filter(s => s.genre === 'especiales').length
-                };
-
-                this.showStats(stats);
-
-                if (this.songs.length > 0) {
-                    this.showMessage(`✅ ${this.songs.length} alabanzas cargadas`, 'success');
-                } else {
-                    this.showMessage('⚠️ No se encontraron alabanzas', 'error');
-                }
-
-                this.filteredSongs = [...this.songs];
-                this.renderPlaylist();
-
-                if (this.songs.length > 0) {
-                    this.loadSong(0);
-                }
-
-                setTimeout(() => {
-                    this.loading.style.display = 'none';
-                    this.mainContent.style.display = 'block';
-                }, 1000);
-            }
             // ======================== FIN SECCIÓN A REEMPLAZAR ========================
 
             showStats(stats) {
