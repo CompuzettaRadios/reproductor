@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎵 Administrador de Música</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .admin-panel {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .scan-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .scan-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .scan-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .scan-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-section {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e1e5e9;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .song-list {
+            margin: 20px 0;
+        }
+
+        .genre-section {
+            margin-bottom: 30px;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .genre-header {
+            background: #f8f9fa;
+            padding: 15px;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .song-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #e1e5e9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .song-item:last-child {
+            border-bottom: none;
+        }
+
+        .song-info {
+            flex: 1;
+        }
+
+        .song-title {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .song-file {
+            font-size: 12px;
+            color: #666;
+            font-family: monospace;
+        }
+
+        .actions-section {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .action-btn {
+            margin: 0 10px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .code-output {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .message {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #cce7ff;
+            color: #004085;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 Administrador de Música</h1>
+            <p>Genera automáticamente la lista de canciones para tu reproductor</p>
+        </header>
+
+        <div class="admin-panel">
+            <div class="scan-section">
+                <h2>Escanear Carpetas de Música</h2>
+                <p>Haz clic para buscar automáticamente archivos MP3 en tus carpetas</p>
+                <br>
+                <button id="scanBtn" class="scan-btn">🔍 Escanear Música</button>
+            </div>
+
+            <div id="progressSection" class="progress-section">
+                <h3>Escaneando...</h3>
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <p id="progressText">Iniciando escaneo...</p>
+            </div>
+
+            <div id="resultsSection" class="results-section">
+                <h2>Resultados del Escaneo</h2>
+                
+                <div id="statsGrid" class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalSongs">0</div>
+                        <div class="stat-label">Total Canciones</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="corosCount">0</div>
+                        <div class="stat-label">Coros</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="himnosCount">0</div>
+                        <div class="stat-label">Himnos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="testimonialesCount">0</div>
+                        <div class="stat-label">Testimoniales</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="especialesCount">0</div>
+                        <div class="stat-label">Especiales</div>
+                    </div>
+                </div>
+
+                <div id="messageArea"></div>
+
+                <div id="songList" class="song-list"></div>
+
+                <div id="actionsSection" class="actions-section">
+                    <h3>Acciones</h3>
+                    <button id="generateCodeBtn" class="action-btn btn-primary">📄 Generar Código</button>
+                    <button id="saveJsonBtn" class="action-btn btn-secondary">💾 Guardar JSON</button>
+                    <button id="copyAllBtn" class="action-btn btn-warning">📋 Copiar Todo</button>
+                </div>
+
+                <div id="codeOutput" class="code-output">
+                    <h3>Código Generado para index.html</h3>
+                    <p>Copia este código y reemplaza el método <code>loadSongs()</code> en tu archivo principal:</p>
+                    <div id="codeBlock" class="code-block"></div>
+                    <button id="copyCodeBtn" class="copy-btn">📋 Copiar Código</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class MusicAdmin {
+            constructor() {
+                this.songs = [];
+                this.genres = ['coros', 'himnos', 'testimoniales', 'especiales'];
+                this.currentProgress = 0;
+                this.totalSteps = 0;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+            }
+
+            initializeElements() {
+                this.scanBtn = document.getElementById('scanBtn');
+                this.progressSection = document.getElementById('progressSection');
+                this.progressFill = document.getElementById('progressFill');
+                this.progressText = document.getElementById('progressText');
+                this.resultsSection = document.getElementById('resultsSection');
+                this.statsGrid = document.getElementById('statsGrid');
+                this.messageArea = document.getElementById('messageArea');
+                this.songList = document.getElementById('songList');
+                this.actionsSection = document.getElementById('actionsSection');
+                this.codeOutput = document.getElementById('codeOutput');
+                this.codeBlock = document.getElementById('codeBlock');
+                
+                // Stats elements
+                this.totalSongs = document.getElementById('totalSongs');
+                this.corosCount = document.getElementById('corosCount');
+                this.himnosCount = document.getElementById('himnosCount');
+                this.testimonialesCount = document.getElementById('testimonialesCount');
+                this.especialesCount = document.getElementById('especialesCount');
+            }
+
+            setupEventListeners() {
+                this.scanBtn.addEventListener('click', () => this.startScan());
+                document.getElementById('generateCodeBtn').addEventListener('click', () => this.generateCode());
+                document.getElementById('saveJsonBtn').addEventListener('click', () => this.saveJson());
+                document.getElementById('copyAllBtn').addEventListener('click', () => this.copyAll());
+                document.getElementById('copyCodeBtn').addEventListener('click', () => this.copyCode());
+            }
+
+            async startScan() {
+                this.showMessage('🔍 Iniciando escaneo automático...', 'info');
+                this.scanBtn.disabled = true;
+                this.scanBtn.textContent = '🔄 Escaneando...';
+                
+                this.progressSection.style.display = 'block';
+                this.resultsSection.style.display = 'none';
+                
+                this.songs = [];
+                this.currentProgress = 0;
+                this.totalSteps = this.genres.length * 50; // Estimamos 50 archivos máximo por género
+                
+                for (const genre of this.genres) {
+                    this.updateProgress(`Escaneando ${genre}...`);
+                    const genreSongs = await this.scanGenre(genre);
+                    this.songs.push(...genreSongs);
+                    await this.delay(500); // Pausa visual
+                }
+                
+                this.updateProgress('Finalizando...', 100);
+                await this.delay(1000);
+                
+                this.showResults();
+                this.scanBtn.disabled = false;
+                this.scanBtn.textContent = '🔍 Escanear Música';
+                this.progressSection.style.display = 'none';
+            }
+
+            async scanGenre(genre) {
+                const songs = [];
+                const maxFiles = 50;
+                
+                // Patrones de nombres de archivos a probar
+                const filePatterns = [
+                    // Números simples
+                    ...Array.from({length: 20}, (_, i) => `${i + 1}.mp3`),
+                    
+                    // Nombres con prefijos
+                    ...Array.from({length: 10}, (_, i) => `song${i + 1}.mp3`),
+                    ...Array.from({length: 10}, (_, i) => `track${i + 1}.mp3`),
+                    ...Array.from({length: 10}, (_, i) => `audio${i + 1}.mp3`),
+                    ...Array.from({length: 10}, (_, i) => `${genre}${i + 1}.mp3`),
+                    
+                    // Nombres comunes en español
+                    'cancion1.mp3', 'cancion2.mp3', 'cancion3.mp3', 'cancion4.mp3', 'cancion5.mp3',
+                    'alabanza1.mp3', 'alabanza2.mp3', 'alabanza3.mp3', 'alabanza4.mp3', 'alabanza5.mp3',
+                    'himno1.mp3', 'himno2.mp3', 'himno3.mp3', 'himno4.mp3', 'himno5.mp3',
+                    'coro1.mp3', 'coro2.mp3', 'coro3.mp3', 'coro4.mp3', 'coro5.mp3',
+                    'testimonio1.mp3', 'testimonio2.mp3', 'testimonio3.mp3'
+                ];
+
+                for (let i = 0; i < filePatterns.length; i++) {
+                    const filename = filePatterns[i];
+                    const testUrl = `mp3/${genre}/${filename}`;
+                    
+                    this.currentProgress++;
+                    const progressPercent = (this.currentProgress / this.totalSteps) * 100;
+                    this.updateProgress(`Probando: ${filename}`, Math.min(progressPercent, 95));
+                    
+                    try {
+                        const response = await fetch(testUrl, { 
+                            method: 'HEAD',
+                            cache: 'no-cache'
+                        });
+                        
+                        if (response.ok) {
+                            const song = this.createSong(filename, genre);
+                            songs.push(song);
+                            console.log(`✅ Encontrado: ${testUrl}`);
+                        }
+                    } catch (error) {
+                        // Ignorar errores silenciosamente
+                    }
+                    
+                    // Pausa pequeña para no saturar
+                    if (i % 5 === 0) {
+                        await this.delay(100);
+                    }
+                }
+                
+                console.log(`📊 Total en ${genre}: ${songs.length}`);
+                return songs;
+            }
+
+            createSong(filename, genre) {
+                const title = this.formatTitle(filename);
+                const artistMap = {
+                    'coros': 'Congregación',
+                    'himnos': 'Himno Tradicional',
+                    'testimoniales': 'Testimonio',
+                    'especiales': 'Alabanza Especial'
+                };
+                
+                return {
+                    title: title,
+                    artist: artistMap[genre] || 'Desconocido',
+                    file: `mp3/${genre}/${filename}`,
+                    genre: genre,
+                    cover: `mp3/${genre}/cover.jpg`,
+                    duration: '0:00',
+                    filename: filename
+                };
+            }
+
+            formatTitle(filename) {
+                return filename
+                    .replace(/\.(mp3|MP3)$/, '')
+                    .replace(/[-_]/g, ' ')
+                    .replace(/\b\w/g, l => l.toUpperCase())
+                    .trim();
+            }
+
+            updateProgress(text, percent = null) {
+                this.progressText.textContent = text;
+                if (percent !== null) {
+                    this.progressFill.style.width = `${percent}%`;
+                }
+            }
+
+            showResults() {
+                this.resultsSection.style.display = 'block';
+                this.actionsSection.style.display = 'block';
+                
+                // Actualizar estadísticas
+                const stats = {
+                    total: this.songs.length,
+                    coros: this.songs.filter(s => s.genre === 'coros').length,
+                    himnos: this.songs.filter(s => s.genre === 'himnos').length,
+                    testimoniales: this.songs.filter(s => s.genre === 'testimoniales').length,
+                    especiales: this.songs.filter(s => s.genre === 'especiales').length
+                };
+                
+                this.totalSongs.textContent = stats.total;
+                this.corosCount.textContent = stats.coros;
+                this.himnosCount.textContent = stats.himnos;
+                this.testimonialesCount.textContent = stats.testimoniales;
+                this.especialesCount.textContent = stats.especiales;
+                
+                if (stats.total > 0) {
+                    this.showMessage(`✅ Escaneo completado: ${stats.total} canciones encontradas`, 'success');
+                    this.renderSongList();
+                } else {
+                    this.showMessage('⚠️ No se encontraron archivos MP3. Verifica que los archivos estén en las carpetas correctas.', 'error');
+                }
+            }
+
+            renderSongList() {
+                this.songList.innerHTML = '';
+                
+                for (const genre of this.genres) {
+                    const genreSongs = this.songs.filter(s => s.genre === genre);
+                    
+                    if (genreSongs.length > 0) {
+                        const genreSection = document.createElement('div');
+                        genreSection.className = 'genre-section';
+                        
+                        genreSection.innerHTML = `
+                            <div class="genre-header">
+                                📁 ${genre.charAt(0).toUpperCase() + genre.slice(1)} (${genreSongs.length})
+                            </div>
+                        `;
+                        
+                        genreSongs.forEach(song => {
+                            const songItem = document.createElement('div');
+                            songItem.className = 'song-item';
+                            songItem.innerHTML = `
+                                <div class="song-info">
+                                    <div class="song-title">🎵 ${song.title}</div>
+                                    <div class="song-file">${song.file}</div>
+                                </div>
+                            `;
+                            genreSection.appendChild(songItem);
+                        });
+                        
+                        this.songList.appendChild(genreSection);
+                    }
+                }
+            }
+
+            generateCode() {
+                const code = this.createLoadSongsCode();
+                this.codeBlock.textContent = code;
+                this.codeOutput.style.display = 'block';
+                this.showMessage('📄 Código generado exitosamente', 'success');
+            }
+
+            createLoadSongsCode() {
+                const songsJson = JSON.stringify(this.songs, null, 8);
+                
+                return `async loadSongs() {
+    console.log('🎵 Cargando lista de canciones generada automáticamente...');
+    this.showMessage('Cargando canciones...', 'info');
+    
+    // Lista generada automáticamente por el Administrador de Música
+    // Última actualización: ${new Date().toLocaleString('es-ES')}
+    this.songs = ${songsJson};
+    
+    // Calcular estadísticas
+    const stats = { 
+        total: this.songs.length,
+        coros: this.songs.filter(s => s.genre === 'coros').length,
+        himnos: this.songs.filter(s => s.genre === 'himnos').length,
+        testimoniales: this.songs.filter(s => s.genre === 'testimoniales').length,
+        especiales: this.songs.filter(s => s.genre === 'especiales').length
+    };
+    
+    this.showStats(stats);
+    
+    if (this.songs.length > 0) {
+        this.showMessage(\`✅ \${this.songs.length} canciones cargadas exitosamente\`, 'success');
+        console.log('📚 Canciones cargadas:', this.songs);
+    } else {
+        this.showMessage('⚠️ No se encontraron archivos MP3.', 'error');
+    }
+    
+    this.filteredSongs = [...this.songs];
+    this.renderPlaylist();
+    
+    if (this.songs.length > 0) {
+        this.loadSong(0);
+    }
+    
+    // Ocultar loading y mostrar contenido
+    setTimeout(() => {
+        this.loading.style.display = 'none';
+        this.mainContent.style.display = 'block';
+    }, 1000);
+}`;
+            }
+
+            async saveJson() {
+                const jsonData = {
+                    generatedAt: new Date().toISOString(),
+                    totalSongs: this.songs.length,
+                    songs: this.songs
+                };
+                
+                const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `music-list-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showMessage('💾 Archivo JSON descargado', 'success');
+            }
+
+            async copyAll() {
+                const text = this.songs.map(song => 
+                    `${song.title} | ${song.genre} | ${song.file}`
+                ).join('\n');
+                
+                try {
+                    await navigator.clipboard.writeText(text);
+                    this.showMessage('📋 Lista copiada al portapapeles', 'success');
+                } catch (err) {
+                    this.showMessage('❌ Error al copiar', 'error');
+                }
+            }
+
+            async copyCode() {
+                try {
+                    await navigator.clipboard.writeText(this.codeBlock.textContent);
+                    this.showMessage('📋 Código copiado al portapapeles', 'success');
+                } catch (err) {
+                    this.showMessage('❌ Error al copiar código', 'error');
+                }
+            }
+
+            showMessage(text, type) {
+                this.messageArea.innerHTML = `<div class="message ${type}">${text}</div>`;
+                setTimeout(() => {
+                    this.messageArea.innerHTML = '';
+                }, 5000);
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            new MusicAdmin();
+        });
+    </script>
+</body>
+</html>
