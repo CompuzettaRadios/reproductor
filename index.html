@@ -583,12 +583,36 @@
     }
 ];
     
+    // Calcular estadísticas - desde aqui copie el codigo antiguo
+    const stats = { 
+        total: this.songs.length,
+        coros: this.songs.filter(s => s.genre === 'coros').length,
+        himnos: this.songs.filter(s => s.genre === 'himnos').length,
+        testimoniales: this.songs.filter(s => s.genre === 'testimoniales').length,
+        especiales: this.songs.filter(s => s.genre === 'especiales').length
+    };
+    
+    this.showStats(stats);
+    
+    if (this.songs.length > 0) {
+        this.showMessage(`✅ ${this.songs.length} canciones cargadas exitosamente`, 'success');
+        console.log('📚 Canciones cargadas:', this.songs);
+    } else {
+        this.showMessage('⚠️ No se encontraron archivos MP3.', 'error');
+    }
+    
     this.filteredSongs = [...this.songs];
     this.renderPlaylist();
     
     if (this.songs.length > 0) {
         this.loadSong(0);
     }
+    
+    // Ocultar loading y mostrar contenido
+    setTimeout(() => {
+        this.loading.style.display = 'none';
+        this.mainContent.style.display = 'block';
+    }, 1000);
 }
             // ======================== FIN SECCIÓN A REEMPLAZAR ========================
 
