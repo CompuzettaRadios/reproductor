@@ -581,14 +581,26 @@
         "cover": "mp3/himnos/hna_libia/cover.jpg",
         "duration": "0:00"
     }
+
+    {
+        "title": "Ven Espiritu Divino extracto2016",
+        "artist": "hno_nestor",
+        "file": "mp3/coros/hno_nestor/Ven Espiritu Divino_extracto2016.mp3",
+        "genre": "coros",
+        "cover": "mp3/coros/hno_nestor/cover.jpg",
+        "duration": "0:00"
+    }
+        
 ];
     
     // Calcular estadísticas
     const stats = { 
         total: this.songs.length,
         himnos: this.songs.filter(s => s.genre === 'himnos').length
+        coros: this.songs.filter(s => s.genre === 'coros').length
     };
-    
+
+
     this.showStats(stats);
     
     if (this.songs.length > 0) {
