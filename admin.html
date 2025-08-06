@@ -207,7 +207,7 @@
                         <option value="">Seleccionar género</option>
                         ${genres.map(g => `<option value="${g}" ${g === file.genre ? 'selected' : ''}>${g}</option>`).join('')}
                     </select>
-                    <select onchange="updateFileArtist('${file.id}', this.value)">
+                    <select onchange="updateFileArtist('${file.id}', this.value)" id="artist_${file.id}">
                         <option value="">Seleccionar artista</option>
                         ${file.genre && artists[file.genre] && artists[file.genre].length > 0 ? artists[file.genre].map(a => 
                             `<option value="${a}" ${a === file.artist ? 'selected' : ''}>${a}</option>`
@@ -223,16 +223,24 @@
             if (file) file.title = title;
         }
 
-        function updateFileGenre(id, genre) {
-            const file = files.find(f => f.id == id);
-            if (file) {
-                file.genre = genre;
-                file.artist = '';
-                updateFileDisplay();
-                updateStats();
-		setTimeout(() => updateFileDisplay(), 50);
-            }
+function updateFileGenre(id, genre) {
+    const file = files.find(f => f.id == id);
+    if (file) {
+        file.genre = genre;
+        file.artist = '';
+        
+        // Actualizar la lista de artistas del select específico
+        const artistSelect = document.querySelector(`#artist_${id}`);
+        if (artistSelect) {
+            artistSelect.innerHTML = '<option value="">Seleccionar artista</option>' +
+                (genre && artists[genre] ? artists[genre].map(a => 
+                    `<option value="${a}">${a}</option>`
+                ).join('') : '');
         }
+        
+        updateStats();
+    }
+}
 
         function updateFileArtist(id, artist) {
             const file = files.find(f => f.id == id);
