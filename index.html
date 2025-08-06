@@ -491,7 +491,7 @@
             }
 
             // ======================== INICIO SECCIÓN A REEMPLAZAR ========================
-            async loadSongs() {
+          async loadSongs() {
     this.songs = [
     {
         "title": "1.  Adoradle",
@@ -583,13 +583,10 @@
     }
 ];
     
-    // Calcular estadísticas - desde aqui copie el codigo antiguo
+    // Calcular estadísticas
     const stats = { 
         total: this.songs.length,
-        coros: this.songs.filter(s => s.genre === 'coros').length,
-        himnos: this.songs.filter(s => s.genre === 'himnos').length,
-        testimoniales: this.songs.filter(s => s.genre === 'testimoniales').length,
-        especiales: this.songs.filter(s => s.genre === 'especiales').length
+        himnos: this.songs.filter(s => s.genre === 'himnos').length
     };
     
     this.showStats(stats);
@@ -614,6 +611,7 @@
         this.mainContent.style.display = 'block';
     }, 1000);
 }
+            
             // ======================== FIN SECCIÓN A REEMPLAZAR ========================
 
             showStats(stats) {
