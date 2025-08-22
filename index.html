@@ -4,1177 +4,162 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reproductor de Alabanzas</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-            min-height: 100vh;
-            color: #2c3e50;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 20px;
-        }
-
-        header h1 {
-            font-size: clamp(1.5em, 4vw, 3em);
-            font-weight: 300;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        header p {
-            font-size: clamp(0.9em, 2vw, 1.2em);
-            opacity: 0.9;
-            font-weight: 300;
-        }
-
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        /* Control Section */
-        .control-section {
-            padding: 25px;
-        }
-
-        .search-bar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-
-        #searchInput {
-            flex: 1;
-            padding: 12px 18px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: #fdfdfd;
-        }
-
-        #searchInput:focus {
-            outline: none;
-            border-color: #3498db;
-            background: white;
-        }
-
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-
-        .btn-primary {
-            background: #3498db;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2980b9;
-            transform: translateY(-1px);
-        }
-
-        /* Player Section */
-        .player-section {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            gap: 20px;
-            align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #ecf0f1;
-        }
-
-        .album-cover {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            object-fit: cover;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .track-info h3 {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 4px;
-        }
-
-        .track-info p {
-            font-size: 14px;
-            color: #7f8c8d;
-        }
-
-        .player-controls {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .control-btn {
-            width: 44px;
-            height: 44px;
-            border: none;
-            border-radius: 50%;
-            background: #34495e;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .control-btn:hover {
-            background: #2c3e50;
-            transform: scale(1.05);
-        }
-
-        #playBtn {
-            width: 52px;
-            height: 52px;
-            font-size: 18px;
-            background: #3498db;
-        }
-
-        #playBtn:hover {
-            background: #2980b9;
-        }
-
-        #shuffleBtn.active {
-            background: #e74c3c;
-        }
-
-        /* Progress Section */
-        .progress-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 13px;
-            color: #7f8c8d;
-            margin-top: 15px;
-        }
-
-        .progress-bar {
-            flex: 1;
-            height: 4px;
-            background: #ecf0f1;
-            border-radius: 2px;
-            cursor: pointer;
-            overflow: hidden;
-        }
-
-        .progress {
-            height: 100%;
-            background: #3498db;
-            border-radius: 2px;
-            transition: width 0.1s ease;
-        }
-
-        /* Volume Control */
-        .volume-section {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-            font-size: 14px;
-            color: #7f8c8d;
-        }
-
-        #volumeSlider {
-            flex: 1;
-            height: 3px;
-            background: #ecf0f1;
-            border-radius: 2px;
-            outline: none;
-            cursor: pointer;
-        }
-
-        #volumeSlider::-webkit-slider-thumb {
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            background: #3498db;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        /* Stats */
-        .stats {
-            text-align: center;
-            padding: 15px;
-            background: #f8f9fa;
-            font-size: 14px;
-            color: #6c757d;
-            border-bottom: 1px solid #ecf0f1;
-        }
-
-        /* Playlist Section */
-        .playlist-section {
-            padding: 25px;
-        }
-
-        .playlist-header {
-            font-size: 20px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .playlist-container {
-            /* Aquí se insertará el código personalizado */
-        }
-
-        /* Messages */
-        .message {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin: 15px 0;
-            text-align: center;
-            font-size: 14px;
-        }
-
-        .message.error {
-            background: #fee;
-            color: #c33;
-            border: 1px solid #fcc;
-        }
-
-        .message.success {
-            background: #efe;
-            color: #090;
-            border: 1px solid #cfc;
-        }
-
-        .message.info {
-            background: #e3f2fd;
-            color: #1976d2;
-            border: 1px solid #bbdefb;
-        }
-
-        .loading {
-            text-align: center;
-            color: white;
-            padding: 40px;
-            font-size: 18px;
-            font-weight: 300;
-        }
-
-        /* Credits */
-        .credits {
-            text-align: center;
-            color: rgba(255,255,255,0.8);
-            font-size: 12px;
-            margin-top: 20px;
-            padding: 15px;
-        }
-
-        .credits a {
-            color: rgba(255,255,255,0.9);
-            text-decoration: none;
-        }
-
-        .credits a:hover {
-            color: white;
-        }
-
-        /* Desktop Layout */
-        @media (min-width: 1024px) {
-            .main-layout {
-                grid-template-columns: 400px 1fr;
-            }
-            
-            .player-section {
-                grid-template-columns: 1fr;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .album-cover {
-                width: 120px;
-                height: 120px;
-                margin: 0 auto;
-            }
-
-            .player-controls {
-                justify-content: center;
-            }
-        }
-
-        @media (min-width: 1200px) {
-            .main-layout {
-                grid-template-columns: 420px 1fr;
-            }
-        }
-
-        /* Tablet Layout */
-        @media (min-width: 768px) and (max-width: 1023px) {
-            .main-layout {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .player-section {
-                grid-template-columns: auto 1fr;
-                gap: 15px;
-            }
-        }
-
-        /* Mobile Optimizations */
-        @media (max-width: 767px) {
-            .container {
-                padding: 10px;
-            }
-
-            header h1 {
-                font-size: 1.8em;
-                line-height: 1.2;
-            }
-
-            header p {
-                font-size: 0.9em;
-            }
-
-            .card {
-                border-radius: 8px;
-            }
-
-            .control-section,
-            .playlist-section {
-                padding: 20px;
-            }
-
-            .player-section {
-                grid-template-columns: 1fr;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .album-cover {
-                width: 100px;
-                height: 100px;
-                margin: 0 auto;
-            }
-
-            .player-controls {
-                justify-content: center;
-            }
-
-            .search-bar {
-                flex-direction: column;
-            }
-
-            .control-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 14px;
-            }
-
-            #playBtn {
-                width: 48px;
-                height: 48px;
-                font-size: 16px;
-            }
-
-            .track-info h3 {
-                font-size: 16px;
-                line-height: 1.3;
-            }
-
-            .track-info p {
-                font-size: 13px;
-            }
-        }
-
-        /* Small Mobile */
-        @media (max-width: 480px) {
-            .control-section,
-            .playlist-section {
-                padding: 15px;
-            }
-
-            .album-cover {
-                width: 80px;
-                height: 80px;
-            }
-
-            .track-info h3 {
-                font-size: 14px;
-                line-height: 1.2;
-            }
-
-            .track-info p {
-                font-size: 12px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <header>
+        <!-- Header -->
+        <header class="header">
             <h1>🎵 Alabanzas Cantadas</h1>
             <p>Colección de coros, himnos, testimonios y más</p>
         </header>
 
+        <!-- Loading -->
         <div id="loading" class="loading">
-            Cargando alabanzas...
+            <div class="loading-spinner"></div>
+            <p>Cargando alabanzas...</p>
         </div>
 
-        <div id="mainContent" style="display: none;">
-            <div class="main-layout">
-                <!-- Control Panel -->
-                <div class="card control-section">
-                    <div class="search-bar">
-                        <input type="text" id="searchInput" placeholder="Buscar alabanza...">
-                        <button class="btn btn-primary" id="refreshBtn">🔄</button>
-                    </div>
-
-                    <div class="player-section">
-                        <img id="albumCover" src="" alt="Carátula" class="album-cover">
-                        <div class="track-info">
-                            <h3 id="songTitle">Selecciona una alabanza</h3>
-                            <p id="songArtist">-</p>
+        <!-- Main Content -->
+        <div id="mainContent" class="main-content" style="display: none;">
+            <div class="layout">
+                <!-- Player Section -->
+                <aside class="player-panel">
+                    <div class="player-card">
+                        <!-- Search Bar -->
+                        <div class="search-section">
+                            <div class="search-bar">
+                                <input type="text" id="searchInput" placeholder="Buscar alabanza...">
+                                <button class="btn-icon" id="refreshBtn" title="Actualizar">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                                        <path d="M21 3v5h-5"></path>
+                                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                                        <path d="M3 21v-5h5"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="genre-filter">
+                                <button class="filter-btn active" data-genre="all">Todos</button>
+                                <button class="filter-btn" data-genre="coros">Coros</button>
+                                <button class="filter-btn" data-genre="himnos">Himnos</button>
+                                <button class="filter-btn" data-genre="especiales">Especiales</button>
+                                <button class="filter-btn" data-genre="testimonios">Testimonios</button>
+                            </div>
                         </div>
-                        <div class="player-controls">
-                            <button id="shuffleBtn" class="control-btn" title="Aleatorio">🔀</button>
-                            <button id="prevBtn" class="control-btn">⏮</button>
-                            <button id="playBtn" class="control-btn">▶</button>
-                            <button id="nextBtn" class="control-btn">⏭</button>
+
+                        <!-- Album Cover & Info -->
+                        <div class="player-display">
+                            <div class="album-container">
+                                <img id="albumCover" src="" alt="Carátula" class="album-cover">
+                                <div class="album-reflection"></div>
+                            </div>
+                            <div class="track-info">
+                                <h3 id="songTitle">Selecciona una alabanza</h3>
+                                <p id="songArtist">-</p>
+                                <span id="songGenre" class="genre-badge">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="progress-section">
+                            <div class="time-display">
+                                <span id="currentTime">0:00</span>
+                                <span id="duration">0:00</span>
+                            </div>
+                            <div class="progress-bar" id="progressBar">
+                                <div class="progress" id="progress"></div>
+                                <div class="progress-handle" id="progressHandle"></div>
+                            </div>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="controls-section">
+                            <div class="main-controls">
+                                <button id="shuffleBtn" class="control-btn secondary" title="Aleatorio">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M16 3h5v5"></path>
+                                        <path d="M4 20L21 3"></path>
+                                        <path d="M21 16v5h-5"></path>
+                                        <path d="M15 15l6 6"></path>
+                                        <path d="M4 4l5 5"></path>
+                                    </svg>
+                                </button>
+                                <button id="prevBtn" class="control-btn">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M19 20L9 12l10-8v16z"></path>
+                                        <path d="M5 19V5"></path>
+                                    </svg>
+                                </button>
+                                <button id="playBtn" class="control-btn primary">
+                                    <svg id="playIcon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M8 5v14l11-7z"></path>
+                                    </svg>
+                                    <svg id="pauseIcon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                        <path d="M6 4h4v16H6z"></path>
+                                        <path d="M14 4h4v16h-4z"></path>
+                                    </svg>
+                                </button>
+                                <button id="nextBtn" class="control-btn">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M5 4l10 8-10 8V4z"></path>
+                                        <path d="M19 5v14"></path>
+                                    </svg>
+                                </button>
+                                <button id="repeatBtn" class="control-btn secondary" title="Repetir">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17 2l4 4-4 4"></path>
+                                        <path d="M3 11v-1a4 4 0 014-4h14"></path>
+                                        <path d="M7 22l-4-4 4-4"></path>
+                                        <path d="M21 13v1a4 4 0 01-4 4H3"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Volume Control -->
+                            <div class="volume-section">
+                                <button id="muteBtn" class="volume-btn">
+                                    <svg id="volumeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                                        <path d="M15.54 8.46a5 5 0 010 7.07"></path>
+                                        <path d="M19.07 4.93a10 10 0 010 14.14"></path>
+                                    </svg>
+                                </button>
+                                <input type="range" id="volumeSlider" min="0" max="100" value="80" class="volume-slider">
+                                <span id="volumeValue">80%</span>
+                            </div>
                         </div>
                     </div>
+                </aside>
 
-                    <div class="progress-section">
-                        <span id="currentTime">0:00</span>
-                        <div class="progress-bar">
-                            <div class="progress" id="progress"></div>
+                <!-- Playlist Section -->
+                <main class="playlist-panel">
+                    <div class="playlist-card">
+                        <div class="playlist-header">
+                            <h2>Lista de Alabanzas</h2>
+                            <div id="stats" class="stats"></div>
                         </div>
-                        <span id="duration">0:00</span>
-                    </div>
 
-                    <div class="volume-section">
-                        <span>🔊</span>
-                        <input type="range" id="volumeSlider" min="0" max="100" value="80">
-                        <span id="volumeValue">80%</span>
-                    </div>
+                        <div id="messages" class="messages"></div>
 
-                    <audio id="audioPlayer"></audio>
-                </div>
-
-                <!-- Playlist -->
-                <div class="card playlist-section">
-                    <h2 class="playlist-header">Lista de Alabanzas</h2>
-                    <div id="stats" class="stats"></div>
-                    <div id="messages"></div>
-                    
-                    <!-- ======================== INICIO SECCIÓN A REEMPLAZAR ======================== -->
-                    <div id="playlist" class="playlist-container">
-                        <!-- Aquí se insertará tu código personalizado de la lista -->
+                        <div class="playlist-container">
+                            <div id="playlist" class="playlist"></div>
+                        </div>
                     </div>
-                    <!-- ======================== FIN SECCIÓN A REEMPLAZAR ======================== -->
-                </div>
+                </main>
             </div>
         </div>
 
-        <div class="credits">
-            Diseñado por <strong>Nestor M. - 2025</strong> | 
-            <a href="mailto:compuzetta@gmail.com">compuzetta@gmaiil.com</a>
-        </div>
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Diseñado por <strong>Nestor M. - 2025</strong> | 
+            <a href="mailto:compuzetta@gmail.com">compuzetta@gmail.com</a></p>
+        </footer>
     </div>
 
-    <script>
-        class AlabanzasPlayer {
-            constructor() {
-                this.songs = [];
-                this.filteredSongs = [];
-                this.currentIndex = 0;
-                this.isPlaying = false;
-                this.isShuffled = false;
-                this.audio = document.getElementById('audioPlayer');
-                
-                this.initializeElements();
-                this.loadSongs();
-                this.setupEventListeners();
-            }
+    <!-- Audio Element -->
+    <audio id="audioPlayer" preload="metadata"></audio>
 
-            initializeElements() {
-                this.playBtn = document.getElementById('playBtn');
-                this.prevBtn = document.getElementById('prevBtn');
-                this.nextBtn = document.getElementById('nextBtn');
-                this.shuffleBtn = document.getElementById('shuffleBtn');
-                this.progress = document.getElementById('progress');
-                this.progressBar = document.querySelector('.progress-bar');
-                this.currentTime = document.getElementById('currentTime');
-                this.duration = document.getElementById('duration');
-                this.songTitle = document.getElementById('songTitle');
-                this.songArtist = document.getElementById('songArtist');
-                this.albumCover = document.getElementById('albumCover');
-                this.playlist = document.getElementById('playlist');
-                this.searchInput = document.getElementById('searchInput');
-                this.refreshBtn = document.getElementById('refreshBtn');
-                this.loading = document.getElementById('loading');
-                this.mainContent = document.getElementById('mainContent');
-                this.stats = document.getElementById('stats');
-                this.messages = document.getElementById('messages');
-                this.volumeSlider = document.getElementById('volumeSlider');
-                this.volumeValue = document.getElementById('volumeValue');
-            }
-
-            // ======================== INICIO SECCIÓN A REEMPLAZAR ========================
- async loadSongs() {
-    this.songs = [
-    {
-        "title": "01.  Adoradle",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/01.- Adoradle.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "02.  Dulce Comunión",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/02.- Dulce Comunión.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "03.  Cerca de ti Señor",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/03.- Cerca de ti Señor.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "04.  El gran médico",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/04.- El gran médico.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "07.  Todo a Cristo yo me rindo",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/07.- Todo a Cristo yo me rindo.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "10.  Melodías Celestiales",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/10.- Melodías Celestiales.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "13.  Dulce Oración",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/13.- Dulce Oración.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "14.  Oh que amigo",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/14.- Oh que amigo.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "22.  Oh yo quiero andar con Cristo",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/22.- Oh yo quiero andar con Cristo.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "29.  Digno es el cordero",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/29.- Digno es el cordero.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "30.  Hay poder en Jesús",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/30.- Hay poder en Jesús.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "32.  Gloria a Jesús",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/32.- Gloria a Jesús.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "33.  Grande gozo hay",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/33.- Grande gozo hay.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "35.  La llamada",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/35.- La llamada.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "36.  Entera consagracion",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/36.- Entera consagracion.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "37.  Dia feliz",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/37.- Dia feliz.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "38.  El Consolador ha venido",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/38.- El Consolador ha venido.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "39.  Santa Biblia",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/39.- Santa Biblia.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "40.  En los negocios del Rey",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/40.- En los negocios del Rey.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "43.  A Jesucristo ven",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/43.- A Jesucristo ven.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "44.  El mundo deje",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/44.- El mundo deje.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "46.  Mas blanco que la nieve",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/46.- Mas blanco que la nieve.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "48.  Eres limpio en la Sangre",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/48.- Eres limpio en la Sangre.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "50.  Te loamos oh Dios",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/50.- Te loamos oh Dios.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "52.  Es Cristo la Roca",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/52.- Es Cristo la Roca.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "53.  En la Cruz",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/53.- En la Cruz.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-    {
-        "title": "69.  Precioso es Jesús",
-        "artist": "hna_Libia",
-        "file": "mp3/himnos/hna_libia/69.- Precioso es Jesús.mp3",
-        "genre": "himnos",
-        "cover": "mp3/himnos/hna_libia/cover.jpg",
-        "duration": "0:00"
-    },
-
-    {
-        "title": "Ven Espiritu Divino extracto2016",
-        "artist": "hno_nestor",
-        "file": "mp3/coros/hno_nestor/Ven Espiritu Divino_extracto2016.mp3",
-        "genre": "coros",
-        "cover": "mp3/coros/hno_nestor/cover.jpg",
-        "duration": "0:00"
-    },
-        
-    {
-        "title": "usa mi vida hno Néstor gutarra 2018",
-        "artist": "hno_nestor",
-        "file": "mp3/especiales/hno_nestor/usa mi vida_hno_Néstor_gutarra_2018.mp3",
-        "genre": "especiales",
-        "cover": "mp3/especiales/hno_nestor/cover.jpg",
-        "duration": "0:00"
-    },
-
-    {
-        "title": "Pista Adoracion",
-        "artist": "hno_nestor",
-        "file": "mp3/especiales/hno_nestor/Pista_Adoracion.mp3",
-        "genre": "especiales",
-        "cover": "mp3/especiales/hno_nestor/cover.jpg",
-        "duration": "0:00"
-    }
-        
-];
-    
-    // Calcular estadísticas
-    const stats = { 
-        total: this.songs.length,
-        himnos: this.songs.filter(s => s.genre === 'himnos').length,
-        coros: this.songs.filter(s => s.genre === 'coros').length,
-        especiales: this.songs.filter(s => s.genre === 'especiales').length
-    };
-
-
-    this.showStats(stats);
-    
-    if (this.songs.length > 0) {
-        this.showMessage(`✅ ${this.songs.length} canciones cargadas exitosamente`, 'success');
-        console.log('📚 Canciones cargadas:', this.songs);
-    } else {
-        this.showMessage('⚠️ No se encontraron archivos MP3.', 'error');
-    }
-    
-    this.filteredSongs = [...this.songs];
-    this.renderPlaylist();
-    
-    if (this.songs.length > 0) {
-        this.loadSong(0);
-    }
-    
-    // Ocultar loading y mostrar contenido
-    setTimeout(() => {
-        this.loading.style.display = 'none';
-        this.mainContent.style.display = 'block';
-    }, 1000);
-}
-            
-            // ======================== FIN SECCIÓN A REEMPLAZAR ========================
-
-            showStats(stats) {
-                const parts = [];
-                if (stats.coros > 0) parts.push(`Coros: ${stats.coros}`);
-                if (stats.himnos > 0) parts.push(`Himnos: ${stats.himnos}`);
-                if (stats.testimoniales > 0) parts.push(`Testimoniales: ${stats.testimoniales}`);
-                if (stats.especiales > 0) parts.push(`Especiales: ${stats.especiales}`);
-                
-                this.stats.innerHTML = `Total: ${stats.total} alabanzas | ${parts.join(' • ')}`;
-            }
-
-            showMessage(text, type = 'info') {
-                const messageClass = type === 'error' ? 'error' : 
-                                   type === 'success' ? 'success' : 'info';
-                
-                this.messages.innerHTML = `<div class="message ${messageClass}">${text}</div>`;
-                
-                if (type !== 'error') {
-                    setTimeout(() => {
-                        this.messages.innerHTML = '';
-                    }, 3000);
-                }
-            }
-
-            setupEventListeners() {
-                this.playBtn.addEventListener('click', () => this.togglePlay());
-                this.prevBtn.addEventListener('click', () => this.previousSong());
-                this.nextBtn.addEventListener('click', () => this.nextSong());
-                this.shuffleBtn.addEventListener('click', () => this.toggleShuffle());
-                this.refreshBtn.addEventListener('click', () => this.refreshSongs());
-                this.progressBar.addEventListener('click', (e) => this.setProgress(e));
-                this.volumeSlider.addEventListener('input', (e) => this.setVolume(e.target.value));
-                this.audio.addEventListener('timeupdate', () => this.updateProgress());
-                this.audio.addEventListener('ended', () => this.nextSong());
-                this.audio.addEventListener('loadedmetadata', () => this.updateDuration());
-                this.audio.addEventListener('error', (e) => this.handleAudioError(e));
-                this.searchInput.addEventListener('input', (e) => this.filterSongs(e.target.value));
-
-                // Establecer volumen inicial
-                this.setVolume(80);
-
-                document.addEventListener('keydown', (e) => {
-                    if (e.target === this.searchInput) return;
-                    
-                    switch(e.code) {
-                        case 'Space':
-                            e.preventDefault();
-                            this.togglePlay();
-                            break;
-                        case 'ArrowLeft':
-                            e.preventDefault();
-                            this.previousSong();
-                            break;
-                        case 'ArrowRight':
-                            e.preventDefault();
-                            this.nextSong();
-                            break;
-                    }
-                });
-            }
-
-            toggleShuffle() {
-                this.isShuffled = !this.isShuffled;
-                this.shuffleBtn.classList.toggle('active', this.isShuffled);
-                this.showMessage(this.isShuffled ? '🔀 Modo aleatorio activado' : '➡️ Modo secuencial activado', 'info');
-            }
-
-            setVolume(value) {
-                this.audio.volume = value / 100;
-                this.volumeValue.textContent = `${value}%`;
-            }
-
-            async refreshSongs() {
-                this.showMessage('Actualizando...', 'info');
-                this.refreshBtn.disabled = true;
-                await this.loadSongs();
-                this.refreshBtn.disabled = false;
-            }
-
-            handleAudioError(e) {
-                console.error('Error al cargar audio:', e);
-                this.showMessage(`Error: ${this.filteredSongs[this.currentIndex]?.title || 'archivo'}`, 'error');
-            }
-
-            loadSong(index) {
-                if (index < 0 || index >= this.filteredSongs.length) return;
-                
-                this.currentIndex = index;
-                const song = this.filteredSongs[index];
-                
-                this.audio.src = song.file;
-                this.songTitle.textContent = song.title;
-                this.songArtist.textContent = song.artist || 'Desconocido';
-                
-                this.loadAlbumCover(song.cover);
-                this.updateActiveItem();
-            }
-
-            loadAlbumCover(coverPath) {
-                const img = new Image();
-                img.onload = () => {
-                    this.albumCover.src = coverPath;
-                };
-                img.onerror = () => {
-                    this.albumCover.src = this.createDefaultCover();
-                };
-                img.src = coverPath;
-            }
-
-            createDefaultCover() {
-                return `data:image/svg+xml,${encodeURIComponent(`
-                    <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
-                        <defs>
-                            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#3498db;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#2c3e50;stop-opacity:1" />
-                            </linearGradient>
-                        </defs>
-                        <rect width="120" height="120" fill="url(#grad)"/>
-                        <text x="60" y="55" text-anchor="middle" font-family="Arial" font-size="24" fill="white">🎵</text>
-                        <text x="60" y="75" text-anchor="middle" font-family="Arial" font-size="12" fill="white">Alabanza</text>
-                    </svg>
-                `)}`;
-            }
-
-            togglePlay() {
-                if (this.filteredSongs.length === 0) return;
-                
-                if (this.isPlaying) {
-                    this.audio.pause();
-                    this.playBtn.textContent = '▶';
-                    this.isPlaying = false;
-                } else {
-                    const playPromise = this.audio.play();
-                    if (playPromise !== undefined) {
-                        playPromise.then(() => {
-                            this.playBtn.textContent = '⏸';
-                            this.isPlaying = true;
-                        }).catch(error => {
-                            console.error('Error al reproducir:', error);
-                            this.handleAudioError(error);
-                        });
-                    }
-                }
-            }
-
-            getNextIndex() {
-                if (this.isShuffled) {
-                    return Math.floor(Math.random() * this.filteredSongs.length);
-                }
-                return this.currentIndex < this.filteredSongs.length - 1 ? this.currentIndex + 1 : 0;
-            }
-
-            getPrevIndex() {
-                if (this.isShuffled) {
-                    return Math.floor(Math.random() * this.filteredSongs.length);
-                }
-                return this.currentIndex > 0 ? this.currentIndex - 1 : this.filteredSongs.length - 1;
-            }
-
-            previousSong() {
-                if (this.filteredSongs.length === 0) return;
-                const newIndex = this.getPrevIndex();
-                this.loadSong(newIndex);
-                if (this.isPlaying) {
-                    this.audio.play();
-                }
-            }
-
-            nextSong() {
-                if (this.filteredSongs.length === 0) return;
-                const newIndex = this.getNextIndex();
-                this.loadSong(newIndex);
-                if (this.isPlaying) {
-                    this.audio.play();
-                }
-            }
-
-            updateProgress() {
-                const { currentTime, duration } = this.audio;
-                if (duration) {
-                    const progressPercent = (currentTime / duration) * 100;
-                    this.progress.style.width = `${progressPercent}%`;
-                }
-                
-                this.currentTime.textContent = this.formatTime(currentTime);
-            }
-
-            updateDuration() {
-                this.duration.textContent = this.formatTime(this.audio.duration);
-            }
-
-            setProgress(e) {
-                const clickX = e.offsetX;
-                const width = this.progressBar.offsetWidth;
-                const duration = this.audio.duration;
-                
-                if (duration) {
-                    this.audio.currentTime = (clickX / width) * duration;
-                }
-            }
-
-            formatTime(seconds) {
-                if (isNaN(seconds)) return '0:00';
-                
-                const mins = Math.floor(seconds / 60);
-                const secs = Math.floor(seconds % 60);
-                
-                return `${mins}:${secs.toString().padStart(2, '0')}`;
-            }
-
-            renderPlaylist() {
-                this.playlist.innerHTML = '';
-                
-                if (this.filteredSongs.length === 0) {
-                    this.playlist.innerHTML = `
-                        <div style="text-align: center; padding: 40px; color: #7f8c8d; font-style: italic;">
-                            No se encontraron alabanzas
-                        </div>`;
-                    return;
-                }
-                
-                this.filteredSongs.forEach((song, index) => {
-                    const songItem = document.createElement('div');
-                    songItem.className = 'playlist-item';
-                    songItem.style.cssText = `
-                        display: flex;
-                        align-items: center;
-                        padding: 12px;
-                        border-radius: 8px;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                        margin-bottom: 8px;
-                        border: 1px solid transparent;
-                    `;
-                    
-                    songItem.innerHTML = `
-                        <img src="${song.cover}" alt="${song.title}" 
-                             style="width: 48px; height: 48px; border-radius: 6px; object-fit: cover; margin-right: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-                             onerror="this.src='${this.createDefaultCover()}'">
-                        <div style="flex: 1; min-width: 0;">
-                            <div style="font-weight: 600; font-size: 14px; color: #2c3e50; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${song.title}
-                            </div>
-                            <div style="font-size: 12px; color: #7f8c8d;">
-                                ${song.artist} • ${song.genre.charAt(0).toUpperCase() + song.genre.slice(1)}
-                            </div>
-                        </div>
-                        <div style="font-size: 12px; color: #95a5a6; min-width: 35px; text-align: right;">
-                            ${song.duration}
-                        </div>
-                    `;
-                    
-                    // Eventos hover
-                    songItem.addEventListener('mouseenter', () => {
-                        if (!songItem.classList.contains('active')) {
-                            songItem.style.backgroundColor = '#f8f9fa';
-                            songItem.style.borderColor = '#e9ecef';
-                            songItem.style.transform = 'translateX(4px)';
-                        }
-                    });
-                    
-                    songItem.addEventListener('mouseleave', () => {
-                        if (!songItem.classList.contains('active')) {
-                            songItem.style.backgroundColor = 'transparent';
-                            songItem.style.borderColor = 'transparent';
-                            songItem.style.transform = 'translateX(0)';
-                        }
-                    });
-                    
-                    // Click para reproducir
-                    songItem.addEventListener('click', () => {
-                        this.loadSong(index);
-                        if (!this.isPlaying) {
-                            this.togglePlay();
-                        }
-                    });
-                    
-                    this.playlist.appendChild(songItem);
-                });
-
-this.updateActiveItem();
-            }
-
-            updateActiveItem() {
-                const items = this.playlist.querySelectorAll('.playlist-item');
-                items.forEach((item, index) => {
-                    const isActive = index === this.currentIndex;
-                    item.classList.toggle('active', isActive);
-                    
-                    if (isActive) {
-                        item.style.backgroundColor = '#3498db';
-                        item.style.borderColor = '#2980b9';
-                        item.style.color = 'white';
-                        item.style.transform = 'translateX(0)';
-                        
-                        // Cambiar color del texto en el item activo
-                        const titleDiv = item.querySelector('div > div:first-child');
-                        const artistDiv = item.querySelector('div > div:nth-child(2)');
-                        const durationDiv = item.querySelector('div:last-child');
-                        
-                        if (titleDiv) titleDiv.style.color = 'white';
-                        if (artistDiv) artistDiv.style.color = 'rgba(255,255,255,0.9)';
-                        if (durationDiv) durationDiv.style.color = 'rgba(255,255,255,0.8)';
-                    } else {
-                        item.style.backgroundColor = 'transparent';
-                        item.style.borderColor = 'transparent';
-                        item.style.color = '#2c3e50';
-                        
-                        // Restaurar colores originales
-                        const titleDiv = item.querySelector('div > div:first-child');
-                        const artistDiv = item.querySelector('div > div:nth-child(2)');
-                        const durationDiv = item.querySelector('div:last-child');
-                        
-                        if (titleDiv) titleDiv.style.color = '#2c3e50';
-                        if (artistDiv) artistDiv.style.color = '#7f8c8d';
-                        if (durationDiv) durationDiv.style.color = '#95a5a6';
-                    }
-                });
-            }
-
-            filterSongs(searchTerm) {
-                const filtered = this.songs.filter(song => 
-                    song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    (song.artist && song.artist.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                    song.genre.toLowerCase().includes(searchTerm.toLowerCase())
-                );
-                
-                this.filteredSongs = filtered;
-                this.currentIndex = 0;
-                this.renderPlaylist();
-                
-                if (this.filteredSongs.length > 0) {
-                    this.loadSong(0);
-                }
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const player = new AlabanzasPlayer();
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
